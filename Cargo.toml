@@ -1,0 +1,18 @@
+[package]
+name = "tessera"
+version = "0.1.0"
+edition = "2021"
+description = "Standalone Rust CLI for scaffolding and building static websites."
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+toml = "0.8"
+pulldown-cmark = "0.10"
+serde = { version = "1.0", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
+tiny_http = "0.12"
+notify = "6"
+log = "0.4"
+env_logger = "0.10"
+
+

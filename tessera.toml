@@ -1,0 +1,6 @@
+name = "my-site"
+version = "0.1.0"
+# Define token placeholders
+[theme.tokens]
+primary = "#0066ff"
+secondary = "#ff6600"
