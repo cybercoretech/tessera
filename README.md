@@ -340,6 +340,18 @@ RUST_LOG=info tessera dev
 
 ---
 
+## 🧑‍💻 Development Checks
+
+The repository is a Cargo workspace. Run the same checks used by GitHub Actions before opening a pull request:
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+```
+
+---
+
 ## 📜 License
 
 Dual-licensed under either:
