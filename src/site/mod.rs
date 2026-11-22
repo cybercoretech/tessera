@@ -31,7 +31,11 @@ impl<'a> Engine<'a> {
         let css_path = self.output_dir.join("styles.css");
         fs::write(css_path, css_content)?;
 
-        // 3. Render markdown pages inside layouts
+        // 3. Write progressive enhancement script (dist/tessera.js)
+        let js_path = self.output_dir.join("tessera.js");
+        fs::write(js_path, include_str!("tessera.js"))?;
+
+        // 4. Render markdown pages inside layouts
         let mut count = 0usize;
         if self.content_dir.is_dir() {
             for entry in fs::read_dir(&self.content_dir)? {
@@ -93,19 +97,29 @@ impl<'a> Engine<'a> {
   <title>{{title}}</title>
   <meta name="description" content="{{description}}">
   <link rel="stylesheet" href="/styles.css">
+  <script src="/tessera.js" defer></script>
 </head>
 <body>
-  <header class="ts-section" style="padding-top: 1.5rem; padding-bottom: 0;">
+  <header style="border-bottom: 1px solid var(--ts-border-color, #e5e7eb);">
     <div class="ts-container">
-      <a href="/" style="font-weight: 700; font-size: 1.25rem;">Tessera</a>
+      <nav class="ts-nav">
+        <a href="/" style="font-weight: 700; font-size: 1.25rem;">⚡ Tessera</a>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <ul class="ts-nav__links">
+            <li><a href="/">Home</a></li>
+          </ul>
+          <button class="ts-theme-toggle" data-ts-theme-toggle aria-label="Toggle dark/light theme">🌓</button>
+        </div>
+      </nav>
     </div>
   </header>
   <main class="ts-container ts-section">
     {{content}}
   </main>
   <footer class="ts-section" style="border-top: 1px solid var(--ts-border-color, #e5e7eb); margin-top: 4rem; padding-top: 1.5rem; padding-bottom: 1.5rem;">
-    <div class="ts-container" style="color: #6b7280; font-size: 0.875rem;">
-      Built with <a href="https://github.com/cybercoretech/tessera">Tessera</a>
+    <div class="ts-container" style="display: flex; justify-content: space-between; align-items: center; color: #6b7280; font-size: 0.875rem;">
+      <span>Built with <a href="https://github.com/cybercoretech/tessera">Tessera</a></span>
+      <span>Lightweight & Zero-JS Fallback</span>
     </div>
   </footer>
 </body>

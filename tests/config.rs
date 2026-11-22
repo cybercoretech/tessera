@@ -48,6 +48,12 @@ fn test_cli_build_and_clean() {
     let html = std::fs::read_to_string("dist/index.html").expect("index.html not found");
     assert!(html.contains("<!DOCTYPE html>"));
     assert!(html.contains("<link rel=\"stylesheet\" href=\"/styles.css\">"));
+    assert!(html.contains("<script src=\"/tessera.js\" defer></script>"));
+
+    // Check dist/tessera.js exists
+    let js = std::fs::read_to_string("dist/tessera.js").expect("tessera.js not found");
+    assert!(js.contains("data-ts-theme-toggle"));
+    assert!(js.contains("data-ts-toggle"));
 
     // 2. Run clean
     let clean_output = Command::new(env!("CARGO_BIN_EXE_tessera"))

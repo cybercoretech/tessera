@@ -170,9 +170,51 @@ Tessera compiles these tokens into CSS custom properties:
 ### Built-in Semantic Classes
 Tessera Kit provides ready-to-use semantic classes out-of-the-box:
 - **Layout:** `.ts-container`, `.ts-section`, `.ts-grid`
-- **Buttons:** `.ts-button`, `.ts-button--secondary`
+- **Navigation:** `.ts-nav`, `.ts-nav__links`, `.ts-nav__toggle`, `.ts-drawer`
+- **Buttons:** `.ts-button`, `.ts-button--secondary`, `.ts-theme-toggle`
 - **Cards:** `.ts-card`
-- **Feedback & Tags:** `.ts-badge`, `.ts-alert`
+- **Feedback & Tags:** `.ts-badge`, `.ts-alert`, `.ts-alert__dismiss`
+
+---
+
+## ⚡ Progressive Enhancement & Interactivity
+
+Tessera ships an ultra-lightweight (~1.5 KB), zero-dependency client script (`dist/tessera.js`) that enhances your pure HTML/CSS site with accessible interactivity.
+
+Components declare interactive behavior via simple `data-ts-*` attributes:
+
+### 🌓 Dark / Light Theme Switcher
+```html
+<button class="ts-theme-toggle" data-ts-theme-toggle aria-label="Toggle theme">
+  🌓 Toggle Theme
+</button>
+```
+- Automatically follows user OS preferences (`@media (prefers-color-scheme: dark)`).
+- Remembers user choice across page visits via `localStorage`.
+
+### 📱 Responsive Mobile Drawer
+```html
+<button class="ts-nav__toggle" data-ts-toggle="mobile-drawer" aria-expanded="false">
+  ☰ Menu
+</button>
+
+<nav id="mobile-drawer" class="ts-drawer">
+  <a href="/">Home</a>
+  <a href="/about.html">About</a>
+</nav>
+```
+- Accessible toggle: updates `aria-expanded`.
+- Keyboard friendly: closes automatically on `Escape` key and returns focus.
+- Closes on outside clicks.
+
+### 🔔 Dismissible Alerts
+```html
+<div class="ts-alert">
+  <span>Notice: Site deployment succeeded!</span>
+  <button class="ts-alert__dismiss" data-ts-dismiss="alert" aria-label="Dismiss">&times;</button>
+</div>
+```
+- Smoothly fades out and unmounts the alert on click.
 
 ---
 
