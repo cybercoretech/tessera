@@ -1,9 +1,11 @@
+pub mod controls;
 pub mod foundations;
 pub mod layout;
-pub mod controls;
 
 use crate::token::TokenSet;
 
+// These themed APIs are staged for the planned Kit/style integration.
+#[allow(dead_code)]
 pub struct Theme<'a> {
     pub foundations: foundations::Foundations<'a>,
     pub layout: layout::Layout<'a>,

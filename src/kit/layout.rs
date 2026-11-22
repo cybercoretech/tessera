@@ -1,9 +1,12 @@
 use crate::token::TokenSet;
 
+// Layout tokens are reserved for the planned responsive layout primitives.
+#[allow(dead_code)]
 pub struct Layout<'a> {
     tokens: &'a TokenSet,
 }
 
+#[allow(dead_code)]
 impl<'a> Layout<'a> {
     pub fn new(tokens: &'a TokenSet) -> Self {
         Self { tokens }

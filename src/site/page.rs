@@ -1,21 +1,24 @@
+use pulldown_cmark::{html, Options, Parser};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
-use pulldown_cmark::{Parser, Options, html};
 
 pub struct Page {
     pub title: String,
     pub description: String,
     pub layout: String,
+    #[allow(dead_code)] // Retained for site checks and templates as they are implemented.
     pub metadata: HashMap<String, String>,
     pub content: String,
+    #[allow(dead_code)] // Retained for diagnostics and future source-aware rendering.
     source: String,
 }
 
 impl Page {
     pub fn load(path: &Path) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let source = fs::read_to_string(path)?;
-        let default_title = path.file_stem()
+        let default_title = path
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("Untitled")
             .to_string();
@@ -31,7 +34,10 @@ impl Page {
             }
         });
         let description = metadata.get("description").cloned().unwrap_or_default();
-        let layout = metadata.get("layout").cloned().unwrap_or_else(|| "base".to_string());
+        let layout = metadata
+            .get("layout")
+            .cloned()
+            .unwrap_or_else(|| "base".to_string());
 
         Ok(Self {
             title,
@@ -53,11 +59,11 @@ impl Page {
 
         // Find the second --- delimiter
         let after_first = &trimmed[3..];
-        let after_first_trimmed = after_first.trim_start_matches(|c| c == '\r' || c == '\n');
+        let after_first_trimmed = after_first.trim_start_matches(['\r', '\n']);
         if let Some(end_idx) = after_first_trimmed.find("---") {
             let front_matter = &after_first_trimmed[..end_idx];
             let body = &after_first_trimmed[end_idx + 3..];
-            let body = body.trim_start_matches(|c| c == '\r' || c == '\n');
+            let body = body.trim_start_matches(['\r', '\n']);
 
             for line in front_matter.lines() {
                 let line = line.trim();
@@ -94,6 +100,7 @@ impl Page {
     }
 
     /// Returns the raw source before front-matter parsing.
+    #[allow(dead_code)] // Used by source-aware checks planned for the site engine.
     pub fn raw_source(&self) -> &str {
         &self.source
     }
@@ -116,7 +123,10 @@ Content here.
 "#;
         let (meta, body) = Page::parse_front_matter(md);
         assert_eq!(meta.get("title").map(|s| s.as_str()), Some("Custom Title"));
-        assert_eq!(meta.get("description").map(|s| s.as_str()), Some("A test description"));
+        assert_eq!(
+            meta.get("description").map(|s| s.as_str()),
+            Some("A test description")
+        );
         assert_eq!(meta.get("layout").map(|s| s.as_str()), Some("blog"));
         assert!(body.starts_with("# Main Heading"));
     }

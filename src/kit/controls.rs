@@ -1,9 +1,12 @@
 use crate::token::TokenSet;
 
+// Controls are exposed before the style compiler consumes them.
+#[allow(dead_code)]
 pub struct Controls<'a> {
     tokens: &'a TokenSet,
 }
 
+#[allow(dead_code)]
 impl<'a> Controls<'a> {
     pub fn new(tokens: &'a TokenSet) -> Self {
         Self { tokens }

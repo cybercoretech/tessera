@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 
 // Import new subcommands
 mod dev;
@@ -10,7 +10,6 @@ mod scaffolding;
 mod kit;
 mod site;
 mod token;
-
 
 /// Top‑level CLI definition.
 #[derive(Parser)]
@@ -89,7 +88,10 @@ mod generators {
     }
 
     /// Update or add a token entry in `tessera.toml` under `[theme.tokens]`.
-    pub fn set_token(key: &str, value: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn set_token(
+        key: &str,
+        value: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let toml_path = Path::new("tessera.toml");
         let mut contents = fs::read_to_string(toml_path)?;
         // Find the start of the [theme.tokens] table (or create it).
@@ -164,7 +166,10 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             let token_set = token::TokenSet::from_toml(&contents)?;
             // Demo: show primary color via Kit
             let theme = kit::Theme::new(&token_set);
-            println!("Primary color from Kit: {}", theme.foundations.primary_color());
+            println!(
+                "Primary color from Kit: {}",
+                theme.foundations.primary_color()
+            );
             // Build site
             let engine = site::Engine::new(&token_set);
             let built = engine.build()?;

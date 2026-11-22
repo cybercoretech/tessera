@@ -1,18 +1,5 @@
-use std::collections::HashMap;
 use serde::Deserialize;
-
-#[derive(Debug, Deserialize, Default, Clone)]
-struct Manifest {
-    name: Option<String>,
-    version: Option<String>,
-    theme: Option<ThemeTable>,
-    tokens: Option<HashMap<String, String>>,
-}
-
-#[derive(Debug, Deserialize, Default, Clone)]
-struct ThemeTable {
-    tokens: Option<HashMap<String, String>>,
-}
+use std::{collections::HashMap, error::Error};
 
 #[derive(Debug, Deserialize, Default, Clone)]
 pub struct TokenSet {
@@ -22,22 +9,14 @@ pub struct TokenSet {
 
 impl TokenSet {
     /// Parses a TokenSet from TOML string, supporting either `[theme.tokens]` or `[tokens]`.
-    pub fn from_toml(content: &str) -> Result<Self, toml::de::Error> {
-        if let Ok(manifest) = toml::from_str::<Manifest>(content) {
-            let mut tokens = HashMap::new();
-            if let Some(t) = manifest.tokens {
-                tokens.extend(t);
-            }
-            if let Some(theme) = manifest.theme {
-                if let Some(t) = theme.tokens {
-                    tokens.extend(t);
-                }
-            }
-            if !tokens.is_empty() || manifest.name.is_some() {
-                return Ok(Self { tokens });
-            }
-        }
-        toml::from_str::<TokenSet>(content)
+    pub fn from_toml(content: &str) -> Result<Self, Box<dyn Error + Send + Sync>> {
+        let config = tessera_config::ProjectConfig::parse(content)?;
+        let tokens = config
+            .theme_tokens()
+            .iter()
+            .map(|(key, value)| (key.clone(), value.clone()))
+            .collect();
+        Ok(Self { tokens })
     }
     /// Retrieve a token value by name. Returns `None` if the token is not defined.
     pub fn get(&self, name: &str) -> Option<&str> {

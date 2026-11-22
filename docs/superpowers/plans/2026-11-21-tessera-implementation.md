@@ -69,7 +69,7 @@ crates/tessera-site/         content, routes, render, assets, checks
 crates/tessera-kit/          semantic CSS/SCSS and component catalogue
 crates/tessera-style/        CSS/SCSS compilation contract
 crates/tessera-tailwind/     Tailwind adapter and process supervision
-crates/tessera-cli/          public CLI
+crates/tessera-cli/          public CLI (extract the existing root CLI in T-06)
 crates/tessera-novastack/    optional bridge
 templates/                   embedded site and generator templates
 tests/fixtures/              minimal test sites and host projects
@@ -93,7 +93,7 @@ T-02..T-09 ─> T-10 quality/release gates
 **Lifecycle:** ready  
 **Dependencies:** none  
 **Repository setup:** At the start of T-01, create `https://github.com/cybercoretech/tessera` as a public repository with no contents. Do not initialize it with a README, license, `.gitignore`, or other files. Add the local GitHub Actions workflow files during the first implementation work, before pushing any project source. Do not push source content until the workflow files are present and ready.
-**Files:** Create root workspace files, `.github/workflows/`, `crates/tessera-config/`, `crates/tessera-cli/`, and `tests/config.rs`.
+**Files:** Create root workspace files, `.github/workflows/`, `crates/tessera-config/`, and config tests. Keep the existing root `tessera` binary as the active CLI until T-06 extracts it into `crates/tessera-cli/`.
 
 **Interfaces:** `ProjectConfig::load(root: &Path) -> Result<ProjectConfig, ConfigError>`; typed `ThemeTokens`; `StyleMode` with `Scss`, `Css`, and `Tailwind`.
 
@@ -177,7 +177,7 @@ T-02..T-09 ─> T-10 quality/release gates
 
 **Lifecycle:** proposed  
 **Dependencies:** T-03, T-04, T-05  
-**Files:** Create `crates/tessera-cli/src/{commands,doctor,dev,serve}.rs` and `tests/cli.rs`; modify `crates/tessera-cli/src/main.rs`.
+**Files:** Create `crates/tessera-cli/` by extracting the existing root `tessera` binary into `src/{commands,doctor,dev,serve}.rs` and `src/main.rs`; add `tests/cli.rs` and update the workspace/root package entry point as needed.
 
 **Acceptance:** `new`, `add`, `generate`, `theme`, `build`, `dev`, `list --json`, and `doctor` validate arguments and provide human/JSON diagnostics. The server exposes only `dist/`. One source change triggers one rebuild. Shutdown releases the watcher and port.
 

@@ -1,9 +1,9 @@
+use crate::site::Engine;
+use crate::token::TokenSet;
 use log::{error, info, warn};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::PathBuf;
 use tiny_http::{Response, Server};
-use crate::site::Engine;
-use crate::token::TokenSet;
 
 /// Returns the project root directory (two levels up from the executable path).
 fn project_root() -> PathBuf {
@@ -20,35 +20,43 @@ pub fn run(port: Option<u16>) -> Result<(), Box<dyn std::error::Error + Send + S
 
     // ---------- file watcher ----------
     let root = project_root();
-    let mut watcher: RecommendedWatcher = notify::recommended_watcher(move |res: Result<notify::Event, notify::Error>| {
-        match res {
-            Ok(event) => {
-                info!("[dev] Detected file change: {:?}", event.paths);
-                // Rebuild the site using token set from tessera.toml if present
-                let token_set = std::fs::read_to_string("tessera.toml")
-                    .ok()
-                    .and_then(|txt| toml::from_str::<TokenSet>(&txt).ok())
-                    .unwrap_or_default();
-                let engine = Engine::new(&token_set);
-                match engine.build() {
-                    Ok(cnt) => {
-                        info!("[dev] Rebuilt {} page(s)", cnt);
-                        println!("[dev] Rebuilt {} page(s)", cnt);
-                    }
-                    Err(e) => {
-                        error!("[dev] Rebuild error: {}", e);
-                        eprintln!("[dev] Rebuild error: {}", e);
+    let mut watcher: RecommendedWatcher =
+        notify::recommended_watcher(move |res: Result<notify::Event, notify::Error>| {
+            match res {
+                Ok(event) => {
+                    info!("[dev] Detected file change: {:?}", event.paths);
+                    // Rebuild the site using token set from tessera.toml if present
+                    let token_set = std::fs::read_to_string("tessera.toml")
+                        .ok()
+                        .and_then(|txt| TokenSet::from_toml(&txt).ok())
+                        .unwrap_or_default();
+                    let engine = Engine::new(&token_set);
+                    match engine.build() {
+                        Ok(cnt) => {
+                            info!("[dev] Rebuilt {} page(s)", cnt);
+                            println!("[dev] Rebuilt {} page(s)", cnt);
+                        }
+                        Err(e) => {
+                            error!("[dev] Rebuild error: {}", e);
+                            eprintln!("[dev] Rebuild error: {}", e);
+                        }
                     }
                 }
+                Err(e) => {
+                    warn!("[dev] watcher error: {:?}", e);
+                    eprintln!("[dev] watcher error: {:?}", e);
+                }
             }
-            Err(e) => {
-                warn!("[dev] watcher error: {:?}", e);
-                eprintln!("[dev] watcher error: {:?}", e);
-            }
-        }
-    })?;
+        })?;
 
-    let watch_dirs = ["content", "layouts", "templates", "styles", "scripts", "public"];
+    let watch_dirs = [
+        "content",
+        "layouts",
+        "templates",
+        "styles",
+        "scripts",
+        "public",
+    ];
     for dir in &watch_dirs {
         let path = root.join(dir);
         if path.is_dir() {
@@ -63,10 +71,7 @@ pub fn run(port: Option<u16>) -> Result<(), Box<dyn std::error::Error + Send + S
 
     // ---------- HTTP server ----------
     let addr = format!("0.0.0.0:{}", port);
-    let server = match Server::http(&addr) {
-        Ok(s) => s,
-        Err(e) => return Err(e.into()),
-    };
+    let server = Server::http(&addr)?;
     info!("[dev] Server listening on http://localhost:{}", port);
     println!("[dev] Server listening on http://localhost:{}", port);
 

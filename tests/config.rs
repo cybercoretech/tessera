@@ -67,7 +67,8 @@ fn test_cli_build_and_clean() {
     assert!(std::path::Path::new("dist/custom-test.js").exists());
 
     // Check dist/search-index.json exists
-    let search_json = std::fs::read_to_string("dist/search-index.json").expect("search-index.json not found");
+    let search_json =
+        std::fs::read_to_string("dist/search-index.json").expect("search-index.json not found");
     assert!(search_json.contains("\"title\""));
     assert!(search_json.contains("\"url\""));
 

@@ -4,6 +4,8 @@ pub struct Foundations<'a> {
     tokens: &'a TokenSet,
 }
 
+// The full foundation token set is consumed as the Kit expands.
+#[allow(dead_code)]
 impl<'a> Foundations<'a> {
     pub fn new(tokens: &'a TokenSet) -> Self {
         Self { tokens }

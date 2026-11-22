@@ -1,7 +1,7 @@
+use crate::site::Engine;
+use crate::token::TokenSet;
 use std::fs;
 use std::path::Path;
-use crate::token::TokenSet;
-use crate::site::Engine;
 
 /// Runs a simple health‑check of the current project.
 ///
@@ -37,7 +37,10 @@ pub fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             .filter_map(Result::ok)
             .filter(|e| e.path().extension().and_then(|s| s.to_str()) == Some("md"))
             .count();
-        println!("[doctor] ✓ content/ exists with {} markdown file(s)", md_count);
+        println!(
+            "[doctor] ✓ content/ exists with {} markdown file(s)",
+            md_count
+        );
     }
 
     // 4. Verify site engine can be instantiated.

@@ -2,8 +2,27 @@
 name = "tessera"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.88"
 description = "Standalone Rust CLI for scaffolding and building static websites."
 license = "MIT OR Apache-2.0"
+
+[workspace]
+members = [
+    ".",
+    "crates/tessera-config",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.88"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+tempfile = "3"
+thiserror = "2"
+toml = "0.8"
 
 [dependencies]
 toml = "0.8"
@@ -14,5 +33,4 @@ tiny_http = "0.12"
 notify = "6"
 log = "0.4"
 env_logger = "0.10"
-
-
+tessera-config = { path = "crates/tessera-config" }

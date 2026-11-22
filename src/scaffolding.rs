@@ -24,7 +24,8 @@ pub fn create_project(name: &str) -> Result<(), Box<dyn std::error::Error + Send
 
     // Write a starter user script in scripts/main.js
     let script_path = project_dir.join("scripts").join("main.js");
-    let script_content = "// Custom client JavaScript\nconsole.log('⚡ Tessera site initialized');\n";
+    let script_content =
+        "// Custom client JavaScript\nconsole.log('⚡ Tessera site initialized');\n";
     fs::write(script_path, script_content)?;
 
     // Write a minimal tessera.toml

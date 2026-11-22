@@ -1,10 +1,10 @@
-pub mod page;
 pub mod nav;
+pub mod page;
 pub mod style;
 
 use crate::token::TokenSet;
-use std::path::{Path, PathBuf};
 use std::fs;
+use std::path::{Path, PathBuf};
 
 pub struct Engine<'a> {
     tokens: &'a TokenSet,
@@ -133,7 +133,11 @@ impl<'a> Engine<'a> {
     }
 
     /// Wraps rendered page content in an HTML layout template.
-    fn apply_layout(&self, page: &page::Page, body_html: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    fn apply_layout(
+        &self,
+        page: &page::Page,
+        body_html: &str,
+    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         let layout_candidates = [
             PathBuf::from(format!("layouts/{}.html", page.layout)),
             PathBuf::from(format!("templates/{}.html", page.layout)),
@@ -147,7 +151,9 @@ impl<'a> Engine<'a> {
             .and_then(|p| fs::read_to_string(p).ok())
             .unwrap_or_else(Self::default_layout);
 
-        let user_script_tag = if Path::new("scripts/main.js").is_file() || self.output_dir.join("main.js").is_file() {
+        let user_script_tag = if Path::new("scripts/main.js").is_file()
+            || self.output_dir.join("main.js").is_file()
+        {
             "<script src=\"/main.js\" defer></script>\n"
         } else {
             ""

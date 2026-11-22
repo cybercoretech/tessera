@@ -1,6 +1,6 @@
+use crate::token::TokenSet;
 use std::fs;
 use std::path::Path;
-use crate::token::TokenSet;
 
 /// Compiles CSS by bundling design token variables, Tessera Kit base styles,
 /// and any custom stylesheets located in `styles/`.
@@ -8,7 +8,10 @@ pub struct StyleCompiler;
 
 impl StyleCompiler {
     /// Compiles all styles into a single CSS string.
-    pub fn compile(tokens: &TokenSet, root: &Path) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    pub fn compile(
+        tokens: &TokenSet,
+        root: &Path,
+    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         let mut css = String::new();
 
         // 1. Emit compiled design token variables

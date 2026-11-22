@@ -2,23 +2,26 @@ name: CI
 
 on:
   push:
-    paths:
-      - '**/*.rs'
-      - 'Cargo.toml'
   pull_request:
-    paths:
-      - '**/*.rs'
-      - 'Cargo.toml'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: ["1.88.0", stable]
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable
-          override: true
-      - name: Cargo check
-        run: cargo check --all
+          toolchain: ${{ matrix.toolchain }}
+          components: clippy, rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Run tests
+        run: cargo test --workspace
