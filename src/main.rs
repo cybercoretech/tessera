@@ -1,8 +1,6 @@
 use clap::{Parser, Subcommand};
-use log::info;
 use std::path::Path;
 use std::fs;
-use toml;
 
 // Import new subcommands
 mod dev;
@@ -163,7 +161,7 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         Commands::Build => {
             // Load token set directly from tessera.toml
             let contents = fs::read_to_string("tessera.toml")?;
-            let token_set: token::TokenSet = toml::from_str(&contents)?;
+            let token_set = token::TokenSet::from_toml(&contents)?;
             // Demo: show primary color via Kit
             let theme = kit::Theme::new(&token_set);
             println!("Primary color from Kit: {}", theme.foundations.primary_color());

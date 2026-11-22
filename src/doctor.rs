@@ -2,7 +2,6 @@ use std::fs;
 use std::path::Path;
 use crate::token::TokenSet;
 use crate::site::Engine;
-use toml;
 
 /// Runs a simple health‑check of the current project.
 ///
@@ -17,7 +16,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("[doctor] ✗ tessera.toml not found");
     } else {
         match fs::read_to_string("tessera.toml") {
-            Ok(txt) => match toml::from_str::<TokenSet>(&txt) {
+            Ok(txt) => match TokenSet::from_toml(&txt) {
                 Ok(tok) => {
                     println!("[doctor] ✓ tessera.toml parsed successfully");
                     println!("[doctor]   Tokens defined: {}", tok.tokens.len());

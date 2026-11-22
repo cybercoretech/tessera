@@ -26,3 +26,34 @@ fn test_cli_doctor() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("[doctor]"));
 }
+
+#[test]
+fn test_cli_build_and_clean() {
+    // 1. Run build
+    let build_output = Command::new(env!("CARGO_BIN_EXE_tessera"))
+        .arg("build")
+        .output()
+        .expect("failed to execute tessera build");
+
+    assert!(build_output.status.success());
+    let stdout = String::from_utf8_lossy(&build_output.stdout);
+    assert!(stdout.contains("Built"));
+
+    // Check dist/styles.css exists
+    let css = std::fs::read_to_string("dist/styles.css").expect("styles.css not found");
+    assert!(css.contains("--ts-primary"));
+    assert!(css.contains(".ts-container"));
+
+    // Check dist/index.html exists and is wrapped in layout
+    let html = std::fs::read_to_string("dist/index.html").expect("index.html not found");
+    assert!(html.contains("<!DOCTYPE html>"));
+    assert!(html.contains("<link rel=\"stylesheet\" href=\"/styles.css\">"));
+
+    // 2. Run clean
+    let clean_output = Command::new(env!("CARGO_BIN_EXE_tessera"))
+        .arg("clean")
+        .output()
+        .expect("failed to execute tessera clean");
+    assert!(clean_output.status.success());
+    assert!(!std::path::Path::new("dist").exists());
+}

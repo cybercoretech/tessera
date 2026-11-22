@@ -19,13 +19,16 @@ pub fn run(port: Option<u16>) -> Result<(), Box<dyn std::error::Error + Send + S
     let port = port.unwrap_or(8000);
 
     // ---------- file watcher ----------
-    let content_path = project_root().join("content");
+    let root = project_root();
     let mut watcher: RecommendedWatcher = notify::recommended_watcher(move |res: Result<notify::Event, notify::Error>| {
         match res {
             Ok(event) => {
                 info!("[dev] Detected file change: {:?}", event.paths);
-                // Rebuild the site using a default token set.
-                let token_set = TokenSet::default();
+                // Rebuild the site using token set from tessera.toml if present
+                let token_set = std::fs::read_to_string("tessera.toml")
+                    .ok()
+                    .and_then(|txt| toml::from_str::<TokenSet>(&txt).ok())
+                    .unwrap_or_default();
                 let engine = Engine::new(&token_set);
                 match engine.build() {
                     Ok(cnt) => {
@@ -45,11 +48,17 @@ pub fn run(port: Option<u16>) -> Result<(), Box<dyn std::error::Error + Send + S
         }
     })?;
 
-    if content_path.exists() {
-        watcher.watch(&content_path, RecursiveMode::Recursive)?;
-        info!("[dev] Watching for changes in {}", content_path.display());
-    } else {
-        warn!("[dev] content/ directory does not exist at {}", content_path.display());
+    let watch_dirs = ["content", "layouts", "templates", "styles", "public"];
+    for dir in &watch_dirs {
+        let path = root.join(dir);
+        if path.is_dir() {
+            let _ = watcher.watch(&path, RecursiveMode::Recursive);
+            info!("[dev] Watching {}", path.display());
+        }
+    }
+    let config_path = root.join("tessera.toml");
+    if config_path.is_file() {
+        let _ = watcher.watch(&config_path, RecursiveMode::NonRecursive);
     }
 
     // ---------- HTTP server ----------
