@@ -93,7 +93,8 @@ code {
 }
 
 pre {
-  padding: 1rem;
+  position: relative;
+  padding: 1.25rem 1rem 1rem 1rem;
   border-radius: 8px;
   background-color: var(--ts-color-code-block, #1f2937);
   color: #f9fafb;
@@ -296,6 +297,194 @@ blockquote {
   --ts-color-alert-bg: #1e293b;
   --ts-color-alert-text: #93c5fd;
 }
+
+/* 1. Code Copy Button */
+.ts-code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.4);
+  color: #f9fafb;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  backdrop-filter: blur(4px);
+}
+.ts-code-copy:hover {
+  background: rgba(0, 0, 0, 0.7);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.ts-code-copy.ts-copied {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+/* 2. Reading Progress Indicator */
+.ts-reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--ts-primary, #0066ff);
+  z-index: 9999;
+  transition: width 0.1s ease-out;
+}
+
+/* 3. Accessible Tabs */
+.ts-tabs {
+  border-bottom: 2px solid var(--ts-border-color, #e5e7eb);
+  margin-bottom: 1.5rem;
+}
+.ts-tab-list {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ts-tab {
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ts-color-muted, #6b7280);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s ease;
+}
+.ts-tab:hover {
+  color: var(--ts-color-text, #111827);
+}
+.ts-tab--active, .ts-tab[aria-selected="true"] {
+  color: var(--ts-primary, #0066ff);
+  border-bottom-color: var(--ts-primary, #0066ff);
+}
+.ts-tabpanel[hidden] {
+  display: none;
+}
+
+/* 4. Instant Search Trigger & Modal */
+.ts-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--ts-border-color, #e5e7eb);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  color: inherit;
+  cursor: pointer;
+}
+.ts-search-btn__hint {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  background-color: var(--ts-color-code-bg, #e5e7eb);
+  color: inherit;
+}
+.ts-search-dialog {
+  border: none;
+  border-radius: 12px;
+  background-color: var(--ts-color-card, #ffffff);
+  color: var(--ts-color-text, #111827);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  width: 90vw;
+  max-width: 580px;
+  margin: 10vh auto auto auto;
+  padding: 0;
+  overflow: hidden;
+}
+.ts-search-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+.ts-search-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--ts-border-color, #e5e7eb);
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
+  outline: none;
+  background: transparent;
+  color: inherit;
+}
+.ts-search-results {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+.ts-search-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.1s ease;
+}
+.ts-search-item:hover {
+  background-color: var(--ts-color-code-bg, #f3f4f6);
+  text-decoration: none;
+}
+.ts-search-item__title {
+  font-weight: 600;
+  color: var(--ts-primary, #0066ff);
+}
+.ts-search-item__desc {
+  font-size: 0.85rem;
+  color: var(--ts-color-muted, #6b7280);
+  margin-top: 0.15rem;
+}
+.ts-search-hint, .ts-search-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--ts-color-muted, #6b7280);
+  font-size: 0.9rem;
+}
+
+/* 5. Image Lightbox */
+.ts-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(6px);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  cursor: zoom-out;
+}
+.ts-lightbox.ts-open {
+  display: flex;
+}
+.ts-lightbox__img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  cursor: default;
+}
+.ts-lightbox__close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: #ffffff;
+  cursor: pointer;
+  line-height: 1;
+}
+
 
 "#
     }

@@ -216,6 +216,48 @@ Components declare interactive behavior via simple `data-ts-*` attributes:
 ```
 - Smoothly fades out and unmounts the alert on click.
 
+### 📋 Code Block Copy Buttons
+All Markdown code blocks (`<pre><code>`) automatically receive an accessible **Copy** button:
+- Clicking it copies the snippet to clipboard via the Clipboard API.
+- Changes button label to `Copied! ✓` for 2 seconds with visual confirmation.
+
+### 📑 Accessible Tabs (`data-ts-tabs`)
+```html
+<div data-ts-tabs>
+  <div class="ts-tabs">
+    <div class="ts-tab-list" role="tablist">
+      <button class="ts-tab ts-tab--active" data-ts-tab="tab-rust">Rust</button>
+      <button class="ts-tab" data-ts-tab="tab-js">JavaScript</button>
+    </div>
+  </div>
+  <div class="ts-tabpanel ts-tabpanel--active" data-ts-tabpanel="tab-rust">
+    <p>Rust code instructions...</p>
+  </div>
+  <div class="ts-tabpanel" data-ts-tabpanel="tab-js" hidden>
+    <p>JavaScript code instructions...</p>
+  </div>
+</div>
+```
+- Full WAI-ARIA keyboard navigation (`ArrowRight`, `ArrowLeft`, `Home`, `End`).
+
+### 🔍 Zero-Backend Client Search (Ctrl+K)
+Tessera generates a lightweight `dist/search-index.json` during build:
+- Trigger with the search button: `<button data-ts-search-trigger>🔍 Search</button>`
+- Or press **`Ctrl+K`** (or `Cmd+K`) anywhere on the page to open the search modal.
+- Live client-side filtering by page title and description.
+
+### 🧭 Scroll Reading Progress Indicator
+Add a progress bar at the top of the viewport:
+```html
+<div class="ts-reading-progress" data-ts-progress></div>
+```
+- Automatically tracks scroll percentage down the document with fluid CSS width transitions.
+
+### 🖼️ Zoomable Image Lightbox
+All images in `<main>` or tagged with `data-ts-lightbox` automatically become zoomable:
+- Clicking an image opens a centered, fullscreen overlay.
+- Closes with `Escape` or by clicking the darkened backdrop.
+
 ---
 
 ## 🪵 Logging & Verbose Diagnostics

@@ -42,6 +42,7 @@ pub fn create_project(name: &str) -> Result<(), Box<dyn std::error::Error + Send
   <script src="/tessera.js" defer></script>
 </head>
 <body>
+  <div class="ts-reading-progress" data-ts-progress></div>
   <header style="border-bottom: 1px solid var(--ts-border-color, #e5e7eb);">
     <div class="ts-container">
       <nav class="ts-nav">
@@ -50,6 +51,7 @@ pub fn create_project(name: &str) -> Result<(), Box<dyn std::error::Error + Send
           <ul class="ts-nav__links">
             <li><a href="/">Home</a></li>
           </ul>
+          <button class="ts-search-btn" data-ts-search-trigger aria-label="Search">🔍 <span class="ts-search-btn__hint">Ctrl+K</span></button>
           <button class="ts-theme-toggle" data-ts-theme-toggle aria-label="Toggle dark/light theme">🌓</button>
         </div>
       </nav>

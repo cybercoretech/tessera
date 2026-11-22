@@ -35,8 +35,10 @@ impl<'a> Engine<'a> {
         let js_path = self.output_dir.join("tessera.js");
         fs::write(js_path, include_str!("tessera.js"))?;
 
-        // 4. Render markdown pages inside layouts
+        // 4. Render markdown pages inside layouts and build search index
         let mut count = 0usize;
+        let mut search_items = Vec::new();
+
         if self.content_dir.is_dir() {
             for entry in fs::read_dir(&self.content_dir)? {
                 let entry = entry?;
@@ -46,16 +48,40 @@ impl<'a> Engine<'a> {
                     let body_html = page.render()?;
                     let full_html = self.apply_layout(&page, &body_html)?;
 
+                    let file_stem = path.file_stem().unwrap().to_str().unwrap();
                     let mut out_path = self.output_dir.clone();
-                    out_path.push(path.file_stem().unwrap());
+                    out_path.push(file_stem);
                     out_path.set_extension("html");
-                    fs::write(out_path, full_html)?;
+                    fs::write(&out_path, full_html)?;
+
+                    let url = if file_stem == "index" {
+                        "/".to_string()
+                    } else {
+                        format!("/{}.html", file_stem)
+                    };
+
+                    search_items.push((page.title.clone(), page.description.clone(), url));
                     count += 1;
                 }
             }
         }
 
-        // 4. Copy public/ directory assets if present
+        // 5. Emit search-index.json
+        let mut search_json = String::from("[\n");
+        for (i, (title, desc, url)) in search_items.iter().enumerate() {
+            let comma = if i + 1 < search_items.len() { "," } else { "" };
+            search_json.push_str(&format!(
+                "  {{\"title\": \"{}\", \"description\": \"{}\", \"url\": \"{}\"}}{}\n",
+                title.replace('\\', "\\\\").replace('"', "\\\""),
+                desc.replace('\\', "\\\\").replace('"', "\\\""),
+                url,
+                comma
+            ));
+        }
+        search_json.push_str("]\n");
+        fs::write(self.output_dir.join("search-index.json"), search_json)?;
+
+        // 6. Copy public/ directory assets if present
         let public_dir = Path::new("public");
         if public_dir.is_dir() {
             Self::copy_dir_all(public_dir, &self.output_dir)?;
@@ -100,6 +126,7 @@ impl<'a> Engine<'a> {
   <script src="/tessera.js" defer></script>
 </head>
 <body>
+  <div class="ts-reading-progress" data-ts-progress></div>
   <header style="border-bottom: 1px solid var(--ts-border-color, #e5e7eb);">
     <div class="ts-container">
       <nav class="ts-nav">
@@ -108,6 +135,7 @@ impl<'a> Engine<'a> {
           <ul class="ts-nav__links">
             <li><a href="/">Home</a></li>
           </ul>
+          <button class="ts-search-btn" data-ts-search-trigger aria-label="Search">🔍 <span class="ts-search-btn__hint">Ctrl+K</span></button>
           <button class="ts-theme-toggle" data-ts-theme-toggle aria-label="Toggle dark/light theme">🌓</button>
         </div>
       </nav>

@@ -55,6 +55,11 @@ fn test_cli_build_and_clean() {
     assert!(js.contains("data-ts-theme-toggle"));
     assert!(js.contains("data-ts-toggle"));
 
+    // Check dist/search-index.json exists
+    let search_json = std::fs::read_to_string("dist/search-index.json").expect("search-index.json not found");
+    assert!(search_json.contains("\"title\""));
+    assert!(search_json.contains("\"url\""));
+
     // 2. Run clean
     let clean_output = Command::new(env!("CARGO_BIN_EXE_tessera"))
         .arg("clean")
