@@ -258,6 +258,75 @@ All images in `<main>` or tagged with `data-ts-lightbox` automatically become zo
 - Clicking an image opens a centered, fullscreen overlay.
 - Closes with `Escape` or by clicking the darkened backdrop.
 
+### 🎨 Client-Side Syntax Highlighting
+Code blocks in Markdown (`language-rust`, `language-js`, `language-python`, etc.) are automatically tokenized and highlighted with language-aware colors in both light and dark themes—zero external dependencies or heavy scripts required.
+
+### 📊 Interactive Table Sorting
+All HTML/Markdown tables are automatically sortable:
+- Click any table header (`<th>`) to sort columns ascending or descending.
+- Intelligently parses numbers, currency, and text with directional indicators (`▲` / `▼`).
+
+### 🍞 Toast Notifications API
+Programmatically display toast alerts from anywhere in your site:
+```javascript
+window.tessera.toast('Changes saved successfully!', 'success');
+window.tessera.toast('Failed to reach server', 'error');
+window.tessera.toast('New post published', 'info');
+```
+
+### ⚡ Instant Page Prefetching
+Hovering over any internal link automatically injects a `<link rel="prefetch">` tag, providing near-instantaneous page transitions with 0ms perceived latency.
+
+### 🔗 Section Anchor Links
+All `h2`, `h3`, and `h4` headings automatically gain a hoverable `#` anchor link. Clicking it updates the URL and copies the direct link to the clipboard with visual confirmation.
+
+---
+
+## 📁 User Custom Scripts Pipeline
+
+You can write your own custom client-side JavaScript in `scripts/`:
+
+```text
+my-site/
+└── scripts/
+    └── main.js       # Your custom JavaScript logic
+```
+
+During `tessera build` and `tessera dev`:
+- All `.js` files from `scripts/` are copied directly into `dist/`.
+- `<script src="/main.js" defer></script>` is automatically injected into `<head>`.
+- Any changes in `scripts/` immediately trigger a live browser reload.
+
+---
+
+## 📈 Privacy-First Analytics
+
+Configure cookieless, lightweight privacy analytics directly in `tessera.toml`:
+
+### Plausible Analytics
+```toml
+[analytics]
+provider = "plausible"
+domain = "yourdomain.com"
+```
+
+### Umami Analytics
+```toml
+[analytics]
+provider = "umami"
+website_id = "your-website-id-uuid"
+```
+
+### Cloudflare Web Analytics
+```toml
+[analytics]
+provider = "cloudflare"
+token = "your-cloudflare-beacon-token"
+```
+
+Tessera automatically injects the proper asynchronous snippet into `<head>` upon building.
+
+
 ---
 
 ## 🪵 Logging & Verbose Diagnostics

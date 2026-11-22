@@ -81,13 +81,55 @@ impl<'a> Engine<'a> {
         search_json.push_str("]\n");
         fs::write(self.output_dir.join("search-index.json"), search_json)?;
 
-        // 6. Copy public/ directory assets if present
+        // 6. Copy user custom scripts from scripts/ to dist/
+        let scripts_dir = Path::new("scripts");
+        if scripts_dir.is_dir() {
+            Self::copy_dir_all(scripts_dir, &self.output_dir)?;
+        }
+
+        // 7. Copy public/ directory assets if present
         let public_dir = Path::new("public");
         if public_dir.is_dir() {
             Self::copy_dir_all(public_dir, &self.output_dir)?;
         }
 
         Ok(count)
+    }
+
+    /// Resolves privacy-friendly analytics script from tessera.toml
+    fn resolve_analytics_tag() -> String {
+        #[derive(serde::Deserialize, Default)]
+        struct AnalyticsManifest {
+            analytics: Option<AnalyticsConfig>,
+        }
+        #[derive(serde::Deserialize, Default)]
+        struct AnalyticsConfig {
+            provider: Option<String>,
+            domain: Option<String>,
+            website_id: Option<String>,
+            token: Option<String>,
+        }
+
+        let content = fs::read_to_string("tessera.toml").unwrap_or_default();
+        if let Ok(m) = toml::from_str::<AnalyticsManifest>(&content) {
+            if let Some(cfg) = m.analytics {
+                let provider = cfg.provider.as_deref().unwrap_or_default();
+                if provider == "plausible" {
+                    if let Some(domain) = cfg.domain {
+                        return format!("<script defer data-domain=\"{}\" src=\"https://plausible.io/js/script.js\"></script>\n", domain);
+                    }
+                } else if provider == "umami" {
+                    if let Some(id) = cfg.website_id {
+                        return format!("<script defer src=\"https://cloud.umami.is/script.js\" data-website-id=\"{}\"></script>\n", id);
+                    }
+                } else if provider == "cloudflare" {
+                    if let Some(token) = cfg.token {
+                        return format!("<script defer src=\"https://static.cloudflareinsights.com/beacon.min.js\" data-cf-beacon='{{\"token\": \"{}\"}}'></script>\n", token);
+                    }
+                }
+            }
+        }
+        String::new()
     }
 
     /// Wraps rendered page content in an HTML layout template.
@@ -105,10 +147,24 @@ impl<'a> Engine<'a> {
             .and_then(|p| fs::read_to_string(p).ok())
             .unwrap_or_else(Self::default_layout);
 
-        let output = template
+        let user_script_tag = if Path::new("scripts/main.js").is_file() || self.output_dir.join("main.js").is_file() {
+            "<script src=\"/main.js\" defer></script>\n"
+        } else {
+            ""
+        };
+        let analytics_tag = Self::resolve_analytics_tag();
+
+        let mut output = template
             .replace("{{title}}", &page.title)
             .replace("{{description}}", &page.description)
             .replace("{{content}}", body_html);
+
+        if !user_script_tag.is_empty() && !output.contains("/main.js") {
+            output = output.replace("</head>", &format!("  {}</head>", user_script_tag));
+        }
+        if !analytics_tag.is_empty() {
+            output = output.replace("</head>", &format!("  {}</head>", analytics_tag));
+        }
 
         Ok(output)
     }

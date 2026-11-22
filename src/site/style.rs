@@ -485,6 +485,110 @@ blockquote {
   line-height: 1;
 }
 
+/* 6. Syntax Highlighting */
+.ts-hl-keyword { color: #f43f5e; font-weight: 600; }
+.ts-hl-string  { color: #10b981; }
+.ts-hl-comment { color: #94a3b8; font-style: italic; }
+.ts-hl-number  { color: #fbbf24; }
+.ts-hl-fn      { color: #38bdf8; font-weight: 600; }
+.ts-hl-punct   { color: #cbd5e1; }
+
+[data-theme="dark"] .ts-hl-keyword { color: #fb7185; }
+[data-theme="dark"] .ts-hl-string  { color: #34d399; }
+[data-theme="dark"] .ts-hl-comment { color: #64748b; }
+[data-theme="dark"] .ts-hl-number  { color: #fcd34d; }
+[data-theme="dark"] .ts-hl-fn      { color: #60a5fa; }
+
+/* 7. Sortable Tables */
+th.ts-sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 1.75rem !important;
+}
+th.ts-sortable:hover {
+  background-color: var(--ts-color-code-bg, #f3f4f6);
+}
+th.ts-sortable::after {
+  content: " ⇅";
+  opacity: 0.35;
+  font-size: 0.8em;
+  position: absolute;
+  right: 0.5rem;
+}
+th.ts-sort-asc::after {
+  content: " ▲";
+  opacity: 1;
+  color: var(--ts-primary, #0066ff);
+}
+th.ts-sort-desc::after {
+  content: " ▼";
+  opacity: 1;
+  color: var(--ts-primary, #0066ff);
+}
+
+/* 8. Toast Notifications */
+.ts-toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 10001;
+  pointer-events: none;
+}
+.ts-toast {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background-color: var(--ts-color-card, #ffffff);
+  color: var(--ts-color-text, #111827);
+  border: 1px solid var(--ts-border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(12px) scale(0.95);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ts-toast--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.ts-toast--success .ts-toast__icon { color: #10b981; }
+.ts-toast--error   .ts-toast__icon { color: #ef4444; }
+.ts-toast--info    .ts-toast__icon { color: var(--ts-primary, #0066ff); }
+
+/* 9. Heading Anchor Links */
+.ts-heading-anchor {
+  opacity: 0;
+  margin-left: 0.5rem;
+  font-size: 0.85em;
+  color: var(--ts-color-muted, #94a3b8);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+h2:hover .ts-heading-anchor,
+h3:hover .ts-heading-anchor,
+h4:hover .ts-heading-anchor {
+  opacity: 1;
+}
+
+/* 10. Command Palette Section Header */
+.ts-search-section-title {
+  padding: 0.5rem 1rem 0.25rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ts-color-muted, #94a3b8);
+  letter-spacing: 0.05em;
+}
+
+
 
 "#
     }

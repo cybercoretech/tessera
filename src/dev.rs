@@ -48,7 +48,7 @@ pub fn run(port: Option<u16>) -> Result<(), Box<dyn std::error::Error + Send + S
         }
     })?;
 
-    let watch_dirs = ["content", "layouts", "templates", "styles", "public"];
+    let watch_dirs = ["content", "layouts", "templates", "styles", "scripts", "public"];
     for dir in &watch_dirs {
         let path = root.join(dir);
         if path.is_dir() {

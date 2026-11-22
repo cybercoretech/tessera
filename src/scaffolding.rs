@@ -14,12 +14,18 @@ pub fn create_project(name: &str) -> Result<(), Box<dyn std::error::Error + Send
         project_dir.join("layouts"),
         project_dir.join("templates"),
         project_dir.join("styles"),
+        project_dir.join("scripts"),
         project_dir.join("public"),
         project_dir.join("src").join("components"),
     ];
     for d in dirs.iter() {
         fs::create_dir_all(d)?;
     }
+
+    // Write a starter user script in scripts/main.js
+    let script_path = project_dir.join("scripts").join("main.js");
+    let script_content = "// Custom client JavaScript\nconsole.log('⚡ Tessera site initialized');\n";
+    fs::write(script_path, script_content)?;
 
     // Write a minimal tessera.toml
     let toml_path = project_dir.join("tessera.toml");
