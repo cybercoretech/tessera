@@ -29,11 +29,12 @@ Build Tessera from source using Cargo:
 git clone https://github.com/cybercoretech/tessera.git
 cd tessera
 
-# Build the release binary
-cargo build --release
+# Install the `tessera` command into ~/.cargo/bin (on your PATH with a standard Rust setup)
+cargo install --path .
+tessera --help
 
-# The executable will be available at:
-./target/release/tessera --help
+# Or run it without installing (works whatever CARGO_TARGET_DIR is set to)
+cargo run --release -- --help
 ```
 
 ---
