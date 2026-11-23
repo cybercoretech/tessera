@@ -1,39 +1,90 @@
 pub mod nav;
 pub mod page;
 pub mod style;
+pub mod toolchain;
 
 use crate::token::TokenSet;
 use std::fs;
 use std::path::{Path, PathBuf};
+use tempfile::Builder;
+use tessera_config::ProjectConfig;
 
 pub struct Engine<'a> {
     tokens: &'a TokenSet,
+    config: Option<&'a ProjectConfig>,
+    root: PathBuf,
     content_dir: PathBuf,
     output_dir: PathBuf,
 }
 
 impl<'a> Engine<'a> {
     pub fn new(tokens: &'a TokenSet) -> Self {
+        Self::at_root(
+            tokens,
+            None,
+            std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+        )
+    }
+
+    pub fn with_config(tokens: &'a TokenSet, config: &'a ProjectConfig) -> Self {
+        Self::at_root(
+            tokens,
+            Some(config),
+            std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+        )
+    }
+
+    pub fn at_root(tokens: &'a TokenSet, config: Option<&'a ProjectConfig>, root: PathBuf) -> Self {
         Self {
             tokens,
-            content_dir: Path::new("content").to_path_buf(),
-            output_dir: Path::new("dist").to_path_buf(),
+            config,
+            content_dir: root.join("content"),
+            output_dir: root.join("dist"),
+            root,
         }
     }
 
     /// Build the site: render all markdown files in `content/` to HTML in `dist/` and compile styles.
     pub fn build(&self) -> Result<usize, Box<dyn std::error::Error + Send + Sync>> {
-        // 1. Ensure output directory exists
-        fs::create_dir_all(&self.output_dir)?;
+        let output_parent = self
+            .output_dir
+            .parent()
+            .filter(|path| !path.as_os_str().is_empty())
+            .unwrap_or_else(|| Path::new("."));
+        let stage = Builder::new()
+            .prefix(".tessera-build-")
+            .tempdir_in(output_parent)?;
+        let staged_output = stage.path().join("dist");
+        fs::create_dir_all(&staged_output)?;
 
-        // 2. Compile and write stylesheet (dist/styles.css)
-        let css_content = style::StyleCompiler::compile(self.tokens, Path::new("."))?;
-        let css_path = self.output_dir.join("styles.css");
+        let mut css_content = if let Some(config) = self.config {
+            style::StyleCompiler::compile_with_config(self.tokens, &self.root, &config.style)?
+        } else {
+            style::StyleCompiler::compile(self.tokens, &self.root)?
+        };
+        if let Some(config) = self.config {
+            if let Some(utility_css) =
+                toolchain::compile_utility_css(config, self.tokens, &self.root, stage.path())?
+            {
+                css_content.push_str("\n/* Optional utility engine output */\n");
+                css_content.push_str(&utility_css);
+            }
+        }
+        let css_path = staged_output.join("styles.css");
         fs::write(css_path, css_content)?;
 
-        // 3. Write progressive enhancement script (dist/tessera.js)
-        let js_path = self.output_dir.join("tessera.js");
-        fs::write(js_path, include_str!("tessera.js"))?;
+        let script_config = self.config.map(|config| &config.scripts);
+        let mut script_outputs = Vec::new();
+        if let Some(config) = self.config {
+            script_outputs = toolchain::bundle_scripts(config, &self.root, &staged_output)?;
+            if config.scripts.interactions {
+                fs::write(staged_output.join("tessera.js"), include_str!("tessera.js"))?;
+            }
+        }
+        let script_tags = Self::script_tags(
+            &script_outputs,
+            script_config.is_some_and(|scripts| scripts.interactions),
+        );
 
         // 4. Render markdown pages inside layouts and build search index
         let mut count = 0usize;
@@ -46,10 +97,10 @@ impl<'a> Engine<'a> {
                 if path.extension().and_then(|s| s.to_str()) == Some("md") {
                     let page = page::Page::load(&path)?;
                     let body_html = page.render()?;
-                    let full_html = self.apply_layout(&page, &body_html)?;
+                    let full_html = self.apply_layout(&page, &body_html, &script_tags)?;
 
                     let file_stem = path.file_stem().unwrap().to_str().unwrap();
-                    let mut out_path = self.output_dir.clone();
+                    let mut out_path = staged_output.clone();
                     out_path.push(file_stem);
                     out_path.set_extension("html");
                     fs::write(&out_path, full_html)?;
@@ -57,7 +108,7 @@ impl<'a> Engine<'a> {
                     let url = if file_stem == "index" {
                         "/".to_string()
                     } else {
-                        format!("/{}.html", file_stem)
+                        format!("/{file_stem}.html")
                     };
 
                     search_items.push((page.title.clone(), page.description.clone(), url));
@@ -70,34 +121,38 @@ impl<'a> Engine<'a> {
         let mut search_json = String::from("[\n");
         for (i, (title, desc, url)) in search_items.iter().enumerate() {
             let comma = if i + 1 < search_items.len() { "," } else { "" };
+            let title = title.replace('\\', "\\\\").replace('"', "\\\"");
+            let desc = desc.replace('\\', "\\\\").replace('"', "\\\"");
             search_json.push_str(&format!(
-                "  {{\"title\": \"{}\", \"description\": \"{}\", \"url\": \"{}\"}}{}\n",
-                title.replace('\\', "\\\\").replace('"', "\\\""),
-                desc.replace('\\', "\\\\").replace('"', "\\\""),
-                url,
-                comma
+                "  {{\"title\": \"{title}\", \"description\": \"{desc}\", \"url\": \"{url}\"}}{comma}\n"
             ));
         }
         search_json.push_str("]\n");
-        fs::write(self.output_dir.join("search-index.json"), search_json)?;
+        fs::write(staged_output.join("search-index.json"), search_json)?;
 
-        // 6. Copy user custom scripts from scripts/ to dist/
-        let scripts_dir = Path::new("scripts");
-        if scripts_dir.is_dir() {
-            Self::copy_dir_all(scripts_dir, &self.output_dir)?;
+        // 6. Copy public/ directory assets if present.
+        let public_dir = self.root.join("public");
+        if public_dir.is_dir() {
+            Self::copy_dir_all(&public_dir, &staged_output)?;
         }
 
-        // 7. Copy public/ directory assets if present
-        let public_dir = Path::new("public");
-        if public_dir.is_dir() {
-            Self::copy_dir_all(public_dir, &self.output_dir)?;
+        let backup = stage.path().join("previous-dist");
+        let had_previous_output = self.output_dir.exists();
+        if had_previous_output {
+            fs::rename(&self.output_dir, &backup)?;
+        }
+        if let Err(error) = fs::rename(&staged_output, &self.output_dir) {
+            if had_previous_output {
+                let _ = fs::rename(&backup, &self.output_dir);
+            }
+            return Err(error.into());
         }
 
         Ok(count)
     }
 
     /// Resolves privacy-friendly analytics script from tessera.toml
-    fn resolve_analytics_tag() -> String {
+    fn resolve_analytics_tag(root: &Path) -> String {
         #[derive(serde::Deserialize, Default)]
         struct AnalyticsManifest {
             analytics: Option<AnalyticsConfig>,
@@ -110,21 +165,21 @@ impl<'a> Engine<'a> {
             token: Option<String>,
         }
 
-        let content = fs::read_to_string("tessera.toml").unwrap_or_default();
+        let content = fs::read_to_string(root.join("tessera.toml")).unwrap_or_default();
         if let Ok(m) = toml::from_str::<AnalyticsManifest>(&content) {
             if let Some(cfg) = m.analytics {
                 let provider = cfg.provider.as_deref().unwrap_or_default();
                 if provider == "plausible" {
                     if let Some(domain) = cfg.domain {
-                        return format!("<script defer data-domain=\"{}\" src=\"https://plausible.io/js/script.js\"></script>\n", domain);
+                        return format!("<script defer data-domain=\"{domain}\" src=\"https://plausible.io/js/script.js\"></script>\n");
                     }
                 } else if provider == "umami" {
                     if let Some(id) = cfg.website_id {
-                        return format!("<script defer src=\"https://cloud.umami.is/script.js\" data-website-id=\"{}\"></script>\n", id);
+                        return format!("<script defer src=\"https://cloud.umami.is/script.js\" data-website-id=\"{id}\"></script>\n");
                     }
                 } else if provider == "cloudflare" {
                     if let Some(token) = cfg.token {
-                        return format!("<script defer src=\"https://static.cloudflareinsights.com/beacon.min.js\" data-cf-beacon='{{\"token\": \"{}\"}}'></script>\n", token);
+                        return format!("<script defer src=\"https://static.cloudflareinsights.com/beacon.min.js\" data-cf-beacon='{{\"token\": \"{token}\"}}'></script>\n");
                     }
                 }
             }
@@ -137,12 +192,14 @@ impl<'a> Engine<'a> {
         &self,
         page: &page::Page,
         body_html: &str,
+        script_tags: &str,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        let layout = &page.layout;
         let layout_candidates = [
-            PathBuf::from(format!("layouts/{}.html", page.layout)),
-            PathBuf::from(format!("templates/{}.html", page.layout)),
-            PathBuf::from("layouts/base.html"),
-            PathBuf::from("templates/base.html"),
+            self.root.join(format!("layouts/{layout}.html")),
+            self.root.join(format!("templates/{layout}.html")),
+            self.root.join("layouts/base.html"),
+            self.root.join("templates/base.html"),
         ];
 
         let template = layout_candidates
@@ -151,28 +208,35 @@ impl<'a> Engine<'a> {
             .and_then(|p| fs::read_to_string(p).ok())
             .unwrap_or_else(Self::default_layout);
 
-        let user_script_tag = if Path::new("scripts/main.js").is_file()
-            || self.output_dir.join("main.js").is_file()
-        {
-            "<script src=\"/main.js\" defer></script>\n"
-        } else {
-            ""
-        };
-        let analytics_tag = Self::resolve_analytics_tag();
+        let analytics_tag = Self::resolve_analytics_tag(&self.root);
 
         let mut output = template
             .replace("{{title}}", &page.title)
             .replace("{{description}}", &page.description)
             .replace("{{content}}", body_html);
 
-        if !user_script_tag.is_empty() && !output.contains("/main.js") {
-            output = output.replace("</head>", &format!("  {}</head>", user_script_tag));
+        if !script_tags.is_empty() {
+            output = output.replace("</head>", &format!("  {script_tags}</head>"));
         }
         if !analytics_tag.is_empty() {
-            output = output.replace("</head>", &format!("  {}</head>", analytics_tag));
+            output = output.replace("</head>", &format!("  {analytics_tag}</head>"));
         }
 
         Ok(output)
+    }
+
+    fn script_tags(script_outputs: &[PathBuf], interactions: bool) -> String {
+        let mut tags = String::new();
+        for output in script_outputs {
+            let output = output.display();
+            tags.push_str(&format!(
+                "<script type=\"module\" src=\"/{output}\"></script>\n"
+            ));
+        }
+        if interactions {
+            tags.push_str("<script src=\"/tessera.js\" defer></script>\n");
+        }
+        tags
     }
 
     /// Default HTML5 layout shell.
@@ -185,10 +249,8 @@ impl<'a> Engine<'a> {
   <title>{{title}}</title>
   <meta name="description" content="{{description}}">
   <link rel="stylesheet" href="/styles.css">
-  <script src="/tessera.js" defer></script>
 </head>
 <body>
-  <div class="ts-reading-progress" data-ts-progress></div>
   <header style="border-bottom: 1px solid var(--ts-border-color, #e5e7eb);">
     <div class="ts-container">
       <nav class="ts-nav">
@@ -197,8 +259,6 @@ impl<'a> Engine<'a> {
           <ul class="ts-nav__links">
             <li><a href="/">Home</a></li>
           </ul>
-          <button class="ts-search-btn" data-ts-search-trigger aria-label="Search">🔍 <span class="ts-search-btn__hint">Ctrl+K</span></button>
-          <button class="ts-theme-toggle" data-ts-theme-toggle aria-label="Toggle dark/light theme">🌓</button>
         </div>
       </nav>
     </div>
@@ -230,5 +290,67 @@ impl<'a> Engine<'a> {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Engine;
+    use crate::token::TokenSet;
+    use std::fs;
+    use tempfile::tempdir;
+    use tessera_config::ProjectConfig;
+
+    #[test]
+    fn default_build_does_not_emit_javascript() {
+        let root = tempdir().unwrap();
+        let config = ProjectConfig::parse("name = \"test\"\n").unwrap();
+        let tokens = TokenSet::default();
+        let engine = Engine::at_root(&tokens, Some(&config), root.path().to_path_buf());
+
+        engine.build().unwrap();
+
+        assert!(!root.path().join("dist/tessera.js").exists());
+        assert!(!root.path().join("dist/assets").exists());
+    }
+
+    #[test]
+    fn failed_utility_build_preserves_previous_dist() {
+        let root = tempdir().unwrap();
+        fs::create_dir(root.path().join("dist")).unwrap();
+        fs::write(root.path().join("dist/previous.txt"), "keep me").unwrap();
+        let config =
+            ProjectConfig::parse("name = \"test\"\n[style]\nutility = \"uno-css\"\n").unwrap();
+        let tokens = TokenSet::default();
+        let engine = Engine::at_root(&tokens, Some(&config), root.path().to_path_buf());
+
+        assert!(engine.build().is_err());
+
+        assert_eq!(
+            fs::read_to_string(root.path().join("dist/previous.txt")).unwrap(),
+            "keep me"
+        );
+    }
+
+    #[test]
+    fn failed_script_build_preserves_previous_dist() {
+        let root = tempdir().unwrap();
+        fs::create_dir(root.path().join("dist")).unwrap();
+        fs::write(root.path().join("dist/previous.txt"), "keep me").unwrap();
+        fs::create_dir(root.path().join("scripts")).unwrap();
+        fs::write(root.path().join("scripts/main.css"), "not a script").unwrap();
+        let config = ProjectConfig::parse(
+            "name = \"test\"\n[scripts]\nenabled = true\nentry_points = [\"scripts/main.css\"]\n",
+        )
+        .unwrap();
+        let tokens = TokenSet::default();
+        let engine = Engine::at_root(&tokens, Some(&config), root.path().to_path_buf());
+
+        assert!(engine.build().is_err());
+
+        assert_eq!(
+            fs::read_to_string(root.path().join("dist/previous.txt")).unwrap(),
+            "keep me"
+        );
     }
 }

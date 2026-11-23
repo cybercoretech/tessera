@@ -23,6 +23,7 @@ serde = { version = "1", features = ["derive"] }
 tempfile = "3"
 thiserror = "2"
 toml = "0.8"
+grass = { version = "=0.13.4", default-features = false }
 
 [dependencies]
 toml = "0.8"
@@ -34,3 +35,5 @@ notify = "6"
 log = "0.4"
 env_logger = "0.10"
 tessera-config = { path = "crates/tessera-config" }
+grass.workspace = true
+tempfile.workspace = true

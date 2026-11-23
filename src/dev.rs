@@ -3,6 +3,7 @@ use crate::token::TokenSet;
 use log::{error, info, warn};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::PathBuf;
+use tessera_config::ProjectConfig;
 use tiny_http::{Response, Server};
 
 /// Returns the project root directory (two levels up from the executable path).
@@ -26,25 +27,27 @@ pub fn run(port: Option<u16>) -> Result<(), Box<dyn std::error::Error + Send + S
                 Ok(event) => {
                     info!("[dev] Detected file change: {:?}", event.paths);
                     // Rebuild the site using token set from tessera.toml if present
-                    let token_set = std::fs::read_to_string("tessera.toml")
-                        .ok()
-                        .and_then(|txt| TokenSet::from_toml(&txt).ok())
-                        .unwrap_or_default();
-                    let engine = Engine::new(&token_set);
-                    match engine.build() {
+                    let result: Result<usize, Box<dyn std::error::Error + Send + Sync>> = (|| {
+                        let contents = std::fs::read_to_string("tessera.toml")?;
+                        let config = ProjectConfig::parse(&contents)?;
+                        let token_set = TokenSet::from_toml(&contents)?;
+                        Engine::with_config(&token_set, &config).build()
+                    })(
+                    );
+                    match result {
                         Ok(cnt) => {
-                            info!("[dev] Rebuilt {} page(s)", cnt);
-                            println!("[dev] Rebuilt {} page(s)", cnt);
+                            info!("[dev] Rebuilt {cnt} page(s)");
+                            println!("[dev] Rebuilt {cnt} page(s)");
                         }
                         Err(e) => {
-                            error!("[dev] Rebuild error: {}", e);
-                            eprintln!("[dev] Rebuild error: {}", e);
+                            error!("[dev] Rebuild error: {e}");
+                            eprintln!("[dev] Rebuild error: {e}");
                         }
                     }
                 }
                 Err(e) => {
-                    warn!("[dev] watcher error: {:?}", e);
-                    eprintln!("[dev] watcher error: {:?}", e);
+                    warn!("[dev] watcher error: {e:?}");
+                    eprintln!("[dev] watcher error: {e:?}");
                 }
             }
         })?;
@@ -70,10 +73,10 @@ pub fn run(port: Option<u16>) -> Result<(), Box<dyn std::error::Error + Send + S
     }
 
     // ---------- HTTP server ----------
-    let addr = format!("0.0.0.0:{}", port);
+    let addr = format!("0.0.0.0:{port}");
     let server = Server::http(&addr)?;
-    info!("[dev] Server listening on http://localhost:{}", port);
-    println!("[dev] Server listening on http://localhost:{}", port);
+    info!("[dev] Server listening on http://localhost:{port}");
+    println!("[dev] Server listening on http://localhost:{port}");
 
     for request in server.incoming_requests() {
         let url_path = request.url().trim_start_matches('/');

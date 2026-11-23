@@ -35,7 +35,7 @@ impl TokenSet {
         sorted_tokens.sort_by_key(|(k, _)| (*k).clone());
         for (key, val) in sorted_tokens {
             let css_var = key.replace('_', "-");
-            out.push_str(&format!("  --ts-{}: {};\n", css_var, val));
+            out.push_str(&format!("  --ts-{css_var}: {val};\n"));
         }
         out.push_str("}\n");
         out

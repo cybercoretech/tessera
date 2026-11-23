@@ -29,10 +29,6 @@ fn test_cli_doctor() {
 
 #[test]
 fn test_cli_build_and_clean() {
-    // Setup test script in scripts/
-    let _ = std::fs::create_dir_all("scripts");
-    std::fs::write("scripts/custom-test.js", "console.log('test');").unwrap();
-
     // 1. Run build
     let build_output = Command::new(env!("CARGO_BIN_EXE_tessera"))
         .arg("build")
@@ -54,17 +50,8 @@ fn test_cli_build_and_clean() {
     let html = std::fs::read_to_string("dist/index.html").expect("index.html not found");
     assert!(html.contains("<!DOCTYPE html>"));
     assert!(html.contains("<link rel=\"stylesheet\" href=\"/styles.css\">"));
-    assert!(html.contains("<script src=\"/tessera.js\" defer></script>"));
-
-    // Check dist/tessera.js exists and contains interactive modules
-    let js = std::fs::read_to_string("dist/tessera.js").expect("tessera.js not found");
-    assert!(js.contains("data-ts-theme-toggle"));
-    assert!(js.contains("data-ts-toggle"));
-    assert!(js.contains("ts-toast"));
-    assert!(js.contains("ts-sortable"));
-
-    // Check custom user script copied
-    assert!(std::path::Path::new("dist/custom-test.js").exists());
+    assert!(!html.contains("/tessera.js"));
+    assert!(!std::path::Path::new("dist/tessera.js").exists());
 
     // Check dist/search-index.json exists
     let search_json =
@@ -79,7 +66,4 @@ fn test_cli_build_and_clean() {
         .expect("failed to execute tessera clean");
     assert!(clean_output.status.success());
     assert!(!std::path::Path::new("dist").exists());
-
-    // Clean up test script
-    let _ = std::fs::remove_dir_all("scripts");
 }

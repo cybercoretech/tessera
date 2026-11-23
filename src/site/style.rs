@@ -1,6 +1,6 @@
 use crate::token::TokenSet;
-use std::fs;
-use std::path::Path;
+use std::{ffi::OsStr, fs, path::Path, process::Command};
+use tessera_config::{SassCompiler, StyleConfig, StyleSource};
 
 /// Compiles CSS by bundling design token variables, Tessera Kit base styles,
 /// and any custom stylesheets located in `styles/`.
@@ -12,6 +12,15 @@ impl StyleCompiler {
         tokens: &TokenSet,
         root: &Path,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        Self::compile_with_config(tokens, root, &StyleConfig::default())
+    }
+
+    /// Compiles the configured stylesheet source and Tessera's base styles.
+    pub fn compile_with_config(
+        tokens: &TokenSet,
+        root: &Path,
+        config: &StyleConfig,
+    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         let mut css = String::new();
 
         // 1. Emit compiled design token variables
@@ -22,24 +31,62 @@ impl StyleCompiler {
         css.push_str(Self::tessera_kit_base());
         css.push('\n');
 
-        // 3. Append custom project stylesheet if present (styles/main.css or styles/styles.css)
-        let custom_css_paths = [
-            root.join("styles").join("main.css"),
-            root.join("styles").join("style.css"),
-            root.join("styles").join("styles.css"),
-        ];
+        // 3. Compile or append the configured project stylesheet, if present.
+        let (paths, is_scss) = match config.source {
+            StyleSource::Css => (
+                vec![
+                    root.join("styles/main.css"),
+                    root.join("styles/style.css"),
+                    root.join("styles/styles.css"),
+                ],
+                false,
+            ),
+            StyleSource::Scss => (
+                vec![
+                    root.join("styles/main.scss"),
+                    root.join("styles/style.scss"),
+                    root.join("styles/styles.scss"),
+                ],
+                true,
+            ),
+        };
 
-        for path in &custom_css_paths {
-            if path.is_file() {
-                let user_css = fs::read_to_string(path)?;
-                css.push_str("/* Custom Project Styles */\n");
-                css.push_str(&user_css);
-                css.push('\n');
-                break;
-            }
+        if let Some(path) = paths.iter().find(|path| path.is_file()) {
+            let user_css = if !is_scss || config.sass_compiler == SassCompiler::Grass {
+                if is_scss {
+                    grass::from_path(path, &grass::Options::default())?
+                } else {
+                    fs::read_to_string(path)?
+                }
+            } else {
+                Self::compile_with_dart_sass(path, OsStr::new("sass"))?
+            };
+            css.push_str("/* Custom Project Styles */\n");
+            css.push_str(&user_css);
+            css.push('\n');
         }
 
         Ok(css)
+    }
+
+    fn compile_with_dart_sass(
+        path: &Path,
+        executable: &OsStr,
+    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        let output = Command::new(executable)
+            .arg("--no-source-map")
+            .arg(path)
+            .output()
+            .map_err(|error| format!("could not start Dart Sass executable `sass`: {error}"))?;
+        if !output.status.success() {
+            return Err(format!(
+                "Dart Sass failed for {}: {}",
+                path.display(),
+                String::from_utf8_lossy(&output.stderr).trim()
+            )
+            .into());
+        }
+        Ok(String::from_utf8(output.stdout)?)
     }
 
     /// Default base CSS containing resets, typography, and foundational `ts-*` component classes.
@@ -594,5 +641,83 @@ h4:hover .ts-heading-anchor {
 
 
 "#
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::StyleCompiler;
+    use crate::token::TokenSet;
+    use std::fs;
+    #[cfg(unix)]
+    use std::os::unix::fs::PermissionsExt;
+    use tempfile::tempdir;
+    use tessera_config::{SassCompiler, StyleConfig, StyleSource};
+
+    #[test]
+    fn grass_compiles_configured_scss_source() {
+        let root = tempdir().unwrap();
+        fs::create_dir(root.path().join("styles")).unwrap();
+        fs::write(
+            root.path().join("styles/main.scss"),
+            "$accent: #123456;\n.ts-sass-test { color: $accent; }\n",
+        )
+        .unwrap();
+        let config = StyleConfig {
+            source: StyleSource::Scss,
+            sass_compiler: SassCompiler::Grass,
+            ..StyleConfig::default()
+        };
+
+        let css =
+            StyleCompiler::compile_with_config(&TokenSet::default(), root.path(), &config).unwrap();
+
+        assert!(css.contains(".ts-sass-test"));
+        assert!(css.contains("color: #123456"));
+    }
+
+    #[test]
+    fn css_mode_keeps_existing_stylesheet_input_unchanged() {
+        let root = tempdir().unwrap();
+        fs::create_dir(root.path().join("styles")).unwrap();
+        fs::write(
+            root.path().join("styles/main.css"),
+            ".existing { color: red; }",
+        )
+        .unwrap();
+
+        let css = StyleCompiler::compile_with_config(
+            &TokenSet::default(),
+            root.path(),
+            &StyleConfig {
+                source: StyleSource::Css,
+                ..StyleConfig::default()
+            },
+        )
+        .unwrap();
+
+        assert!(css.contains(".existing { color: red; }"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn dart_sass_cli_output_is_used_for_scss() {
+        let root = tempdir().unwrap();
+        let style_path = root.path().join("main.scss");
+        fs::write(&style_path, "$color: red;").unwrap();
+        let sass_path = root.path().join("sass");
+        fs::write(
+            &sass_path,
+            "#!/bin/sh\nprintf '.dart-sass-test { color: blue; }\\n'\n",
+        )
+        .unwrap();
+        let mut permissions = fs::metadata(&sass_path).unwrap().permissions();
+        permissions.set_mode(0o755);
+        fs::set_permissions(&sass_path, permissions).unwrap();
+
+        let css =
+            StyleCompiler::compile_with_dart_sass(&style_path, sass_path.as_os_str()).unwrap();
+
+        assert!(css.contains(".dart-sass-test"));
     }
 }

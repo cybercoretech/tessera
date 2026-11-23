@@ -2,6 +2,7 @@ use crate::site::Engine;
 use crate::token::TokenSet;
 use std::fs;
 use std::path::Path;
+use tessera_config::ProjectConfig;
 
 /// Runs a simple health‑check of the current project.
 ///
@@ -16,14 +17,26 @@ pub fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("[doctor] ✗ tessera.toml not found");
     } else {
         match fs::read_to_string("tessera.toml") {
-            Ok(txt) => match TokenSet::from_toml(&txt) {
-                Ok(tok) => {
+            Ok(txt) => match (ProjectConfig::parse(&txt), TokenSet::from_toml(&txt)) {
+                (Ok(config), Ok(tok)) => {
                     println!("[doctor] ✓ tessera.toml parsed successfully");
-                    println!("[doctor]   Tokens defined: {}", tok.tokens.len());
+                    let token_count = tok.tokens.len();
+                    println!("[doctor]   Tokens defined: {token_count}");
+                    for (tool, major) in crate::site::toolchain::required_tools(&config) {
+                        match crate::site::toolchain::check_tool(tool, major) {
+                            Ok(version) => println!("[doctor] ✓ {tool} {version}"),
+                            Err(error) => println!("[doctor] ✗ {error}"),
+                        }
+                    }
                 }
-                Err(e) => println!("[doctor] ✗ Failed to parse tessera.toml: {}", e),
+                (Err(error), _) => {
+                    println!("[doctor] ✗ Failed to parse tessera.toml: {error}")
+                }
+                (_, Err(error)) => {
+                    println!("[doctor] ✗ Failed to parse tessera.toml: {error}")
+                }
             },
-            Err(e) => println!("[doctor] ✗ Could not read tessera.toml: {}", e),
+            Err(e) => println!("[doctor] ✗ Could not read tessera.toml: {e}"),
         }
     }
 
@@ -37,10 +50,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             .filter_map(Result::ok)
             .filter(|e| e.path().extension().and_then(|s| s.to_str()) == Some("md"))
             .count();
-        println!(
-            "[doctor] ✓ content/ exists with {} markdown file(s)",
-            md_count
-        );
+        println!("[doctor] ✓ content/ exists with {md_count} markdown file(s)");
     }
 
     // 4. Verify site engine can be instantiated.

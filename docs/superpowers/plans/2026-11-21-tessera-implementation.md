@@ -7,11 +7,13 @@
 **Plan readiness:** structured  
 **Spec:** `docs/superpowers/specs/2026-11-21-tessera-design.md`
 
-**Goal:** Build a standalone Rust CLI that scaffolds and builds static websites with an independently designed, ambitious Tessera Kit, native SCSS/CSS, optional Tailwind integration, and an optional NovaStack bridge.
+**Goal:** Build a standalone Rust CLI that scaffolds and builds static websites with an independently designed, ambitious Tessera Kit, native CSS/SCSS support, optional Tailwind and UnoCSS adapters, an opt-in JavaScript/TypeScript asset pipeline, and an optional NovaStack bridge.
 
-**Architecture:** A Cargo workspace isolates configuration, site rendering, Kit assets, style adapters, CLI orchestration, and bridges. Sites retain editable source files. Builds produce deterministic static output in `dist/`.
+**Architecture:** A Cargo workspace isolates configuration, site rendering, Kit assets, style adapters, optional script bundling, CLI orchestration, and bridges. Sites retain editable source files. Builds produce deterministic static output in `dist/`.
 
-**Tech stack:** Rust 2021, MSRV 1.88, Clap, Serde/TOML, MiniJinja, RustEmbed, pulldown-cmark, Grass, Notify, Axum/Tokio, tempfile, assert_cmd, and insta. Tailwind v4 is external and only required in Tailwind mode.
+**Tech stack:** Rust 2021, MSRV 1.88, Clap, Serde/TOML, MiniJinja, RustEmbed, pulldown-cmark, Grass, Notify, Axum/Tokio, tempfile, assert_cmd, and insta. Dart Sass, Tailwind v4, UnoCSS, esbuild, and the TypeScript compiler are opt-in external tools; none are silently installed. The TypeScript compiler is used for type checking, while esbuild produces browser assets.
+
+**Implementation note:** The current repository keeps the active CLI in the root `tessera` package. The configuration and style/script toolchain integrations are currently implemented in `crates/tessera-config/` and `src/site/{style,toolchain}.rs`; extracting these into the proposed crates remains a later architecture task and is not required for their current behavior.
 
 ## Global constraints
 
@@ -27,7 +29,10 @@
 - Keep `tessera-novastack` optional and separately versioned.
 - Generated sites include no JavaScript by default. Optional interactions use small, dependency-free plain-JavaScript enhancements with usable HTML/CSS fallbacks.
 - Tailwind is an optional adapter, never a Tessera Kit dependency. Do not alias `ts-*` classes to Tailwind utilities, generate component-class mappings, require Tailwind to build the Kit, or promise Tailwind-class compatibility.
-- UnoCSS is deferred as a possible later optional adapter, after core interfaces stabilize and user demand is demonstrated.
+- UnoCSS is an optional utility adapter implemented after the shared style and utility-engine interfaces stabilize; it remains absent from the default build.
+- CSS and SCSS source selection is independent of the selected Sass compiler and optional utility engine. Grass is the default Sass compiler; Dart Sass is an explicit compatibility option.
+- At most one utility engine (`none`, Tailwind, or UnoCSS) is active for a build. Tailwind and UnoCSS remain adapters around the Tessera-owned Kit and cannot redefine its API.
+- Script processing is disabled by default. When enabled, esbuild bundles JavaScript or TypeScript; TypeScript type checking is a separate opt-in check using `tsc --noEmit`.
 - Materialize is an optional theme direction, not Tessera's default identity or a separate component API.
 - UIkit and Semantic UI are pattern references only. Adopt an idea only for a clear use case, then implement it using Tessera's API and support contracts.
 - Do not model the core API on Bootstrap or adopt a fixed 12-column grid contract.
@@ -46,7 +51,7 @@ The Kit may grow across foundations, layout, controls, content and data display,
 | Semantic UI | Readable component concepts | Reference only; use concise Tessera names and Rust-native orchestration, without inherited naming grammar or legacy runtime conventions. |
 | Materialize | Optional Material-inspired theme direction | Theme only; component APIs and functionality remain independent of this visual style. |
 | Power CSS and Cardinal CSS | Compatible CSS architecture and composition ideas | Pattern-level influence only; no compatibility promise. |
-| UnoCSS | Potential on-demand utility adapter | Defer until core style interfaces are stable and there is demonstrated demand. |
+| UnoCSS | Optional on-demand utility adapter | Implement as an independently selected adapter using Tessera tokens and configuration; never require it for the Kit or run it alongside Tailwind in one build. |
 | Zola | None for the current product direction | Out of current scope; the approved site-engine plan remains authoritative. |
 | Pure.css, Pico.css, HTML5 Boilerplate, Metro UI, Bootflat, Spectre.css, Bootstrap | None for the current roadmap | Excluded from active reference scope. Metro UI may be reconsidered only if Tessera later becomes an app framework. |
 
@@ -58,7 +63,7 @@ The adapter boundary is one-way: Tessera tokens may feed Tailwind theme input, a
 
 ### JavaScript and interaction contract
 
-Generated sites ship no JavaScript by default. The optional interaction package begins with a small number of high-value enhancements, implemented in dependency-free plain JavaScript and included only when selected. Prefer native HTML and CSS; document keyboard, focus, reduced-motion, responsive, and no-JavaScript behavior for each enhancement. TypeScript may be considered for authoring Tessera-maintained scripts if their complexity justifies a compile step, but generated sites receive browser-ready JavaScript and require no TypeScript toolchain.
+Generated sites ship no JavaScript by default. The optional interaction package begins with a small number of high-value enhancements and is included only when selected. Prefer native HTML and CSS; document keyboard, focus, reduced-motion, responsive, and no-JavaScript behavior for each enhancement. Tessera-maintained scripts may use TypeScript when useful; esbuild emits browser-ready JavaScript, while type checking remains a separate opt-in `tsc --noEmit` step. Generated sites do not need a TypeScript runtime.
 
 ## Workspace layout
 
@@ -67,8 +72,10 @@ Cargo.toml
 crates/tessera-config/       manifest, tokens, diagnostics
 crates/tessera-site/         content, routes, render, assets, checks
 crates/tessera-kit/          semantic CSS/SCSS and component catalogue
-crates/tessera-style/        CSS/SCSS compilation contract
+crates/tessera-style/        CSS/SCSS compilation contract and compiler selection
 crates/tessera-tailwind/     Tailwind adapter and process supervision
+crates/tessera-unocss/       optional UnoCSS adapter and process supervision
+crates/tessera-scripts/      opt-in JavaScript/TypeScript asset pipeline
 crates/tessera-cli/          public CLI (extract the existing root CLI in T-06)
 crates/tessera-novastack/    optional bridge
 templates/                   embedded site and generator templates
@@ -79,11 +86,13 @@ tests/fixtures/              minimal test sites and host projects
 
 ```text
 T-01 config/workspace ─┬─> T-02 Kit/tokens ─┬─> T-04 build ─> T-06 dev
-                       │                     └─> T-07 Tailwind
+                       │                     ├─> T-07 Tailwind
+                       │                     ├─> T-11 UnoCSS
+                       │                     └─> T-12 scripts
                        └─> T-03 starters ───┘
 T-04 ─> T-05 safe generators ─> T-08 catalogue/docs
 T-01 + T-04 + T-05 ─> T-09 NovaStack bridge
-T-02..T-09 ─> T-10 quality/release gates
+T-02..T-09 + T-11..T-12 ─> T-10 quality/release gates
 ```
 
 ## Tasks
@@ -95,9 +104,9 @@ T-02..T-09 ─> T-10 quality/release gates
 **Repository setup:** At the start of T-01, create `https://github.com/cybercoretech/tessera` as a public repository with no contents. Do not initialize it with a README, license, `.gitignore`, or other files. Add the local GitHub Actions workflow files during the first implementation work, before pushing any project source. Do not push source content until the workflow files are present and ready.
 **Files:** Create root workspace files, `.github/workflows/`, `crates/tessera-config/`, and config tests. Keep the existing root `tessera` binary as the active CLI until T-06 extracts it into `crates/tessera-cli/`.
 
-**Interfaces:** `ProjectConfig::load(root: &Path) -> Result<ProjectConfig, ConfigError>`; typed `ThemeTokens`; `StyleMode` with `Scss`, `Css`, and `Tailwind`.
+**Interfaces:** `ProjectConfig::load(root: &Path) -> Result<ProjectConfig, ConfigError>`; typed `ThemeTokens`; `StyleSource` (`Css` or `Scss`), `SassCompiler` (`Grass` by default or explicitly selected `DartSass`), `UtilityEngine` (`None`, `Tailwind`, or `UnoCss`, mutually exclusive), and an opt-in script pipeline configuration.
 
-**Acceptance:** valid manifests parse. Invalid style modes, tokens, metadata, and unknown keys give field-specific errors without panics. Rust 1.88 is enforced. Configuration provides clear extension points for Kit modules, optional adapters, interaction assets, and theme selection without creating ambiguous or duplicate class APIs.
+**Acceptance:** valid manifests parse. Invalid style sources, compiler/utility selections, tokens, metadata, and unknown keys give field-specific errors without panics. Rust 1.88 is enforced. Configuration provides clear extension points for Kit modules, optional adapters, interaction assets, script processing, and theme selection without creating ambiguous or duplicate class APIs. Only one utility engine can be selected at a time.
 
 **Repository/workflow acceptance:** the GitHub repository is public and empty before local implementation files are created; the initial local workflow files are added and reviewed before the first source push. The first push targets the already-created empty repository and includes the project source together with those workflow files.
 
@@ -147,9 +156,9 @@ T-02..T-09 ─> T-10 quality/release gates
 **Dependencies:** T-01, T-02, T-03  
 **Files:** Create `crates/tessera-site/src/{content,navigation,render,assets,check,build}.rs`, `tests/build.rs`, and `tests/fixtures/basic-site/`.
 
-**Interfaces:** `build(project: &ProjectConfig, options: BuildOptions) -> Result<BuildReport, BuildError>`. Builds stage output and replace `dist/` only after validation succeeds.
+**Interfaces:** `build(project: &ProjectConfig, options: BuildOptions) -> Result<BuildReport, BuildError>`. The style pipeline accepts CSS or SCSS; Grass is the default SCSS compiler, and Dart Sass may be explicitly selected as a separately installed compatible compiler. Utility adapters are invoked only when selected. Builds stage output and replace `dist/` only after validation succeeds.
 
-**Acceptance:** HTML and Markdown render through layouts. Navigation, `public/`, and assets emit correctly. Duplicate routes, broken internal links, absent metadata, and missing image alt text fail. Output is deterministic. Failed builds keep the prior `dist/`.
+**Acceptance:** HTML and Markdown render through layouts. Navigation, `public/`, styles, and assets emit correctly. CSS and default Grass-based SCSS builds do not require Node.js or network access. Selecting Dart Sass, Tailwind, or UnoCSS requires the user-installed corresponding executable and produces a clear diagnostic if unavailable. Duplicate routes, broken internal links, absent metadata, and missing image alt text fail. Output is deterministic. Failed builds keep the prior `dist/`.
 
 - [ ] Write failing fixtures for routing, Markdown, links, metadata, alt text, and preserved output.
 - [ ] Run `cargo test -p tessera-site --test build`; expect failures.
@@ -189,25 +198,57 @@ T-02..T-09 ─> T-10 quality/release gates
 
 ### T-07: Add first-class Tailwind v4 support
 
-**Lifecycle:** proposed  
-**Dependencies:** T-02, T-04, T-06  
-**Files:** Create `crates/tessera-tailwind/{Cargo.toml,src/lib.rs,src/detect.rs,src/generate.rs,src/process.rs}`, `templates/shared/styles/tailwind.css.jinja`, and `tests/tailwind.rs`; modify CLI style-mode wiring.
+**Lifecycle:** implemented in the current root-package layout; crate extraction is deferred to T-06
+**Dependencies:** T-01, T-02, T-04
+**Files:** `src/site/toolchain.rs`, `src/site/mod.rs`, `src/doctor.rs`, `crates/tessera-config/`; optional future extraction to `crates/tessera-tailwind/`.
 
 **Interfaces:** `TailwindAdapter::check(&ProjectConfig) -> AdapterStatus` and `TailwindAdapter::build(&ProjectConfig, BuildMode) -> Result<StyleArtifact, TailwindError>`.
 
-**Acceptance:** Tailwind is explicitly opt-in. Tailwind v4 input may be generated from Tessera tokens and the adapter may scan supported project sources. `doctor` reports missing or incompatible user-installed executables. SCSS/CSS modes never spawn Tailwind. Tessera components retain independent CSS and work without Tailwind; tests prove there are no `ts-*` aliases or generated component mappings. A fixture shows user-authored Tailwind utilities can coexist with Tessera components without defining or replacing the Kit API. `dev` stops supervised child processes. Tessera never silently installs or downloads Tailwind.
+**Acceptance:** Tailwind is explicitly opt-in through utility-engine selection. Tailwind v4 input may be generated from Tessera tokens and the adapter may scan supported project sources. `doctor` reports missing or incompatible user-installed executables. Selecting CSS or SCSS alone never spawns Tailwind; it runs only when explicitly selected as the utility engine. Tessera components retain independent CSS and work without Tailwind; tests prove there are no `ts-*` aliases or generated component mappings. A fixture shows user-authored Tailwind utilities can coexist with Tessera components without defining or replacing the Kit API. `dev` stops supervised child processes. Tessera never silently installs or downloads Tailwind.
 
-- [ ] Write fake-executable tests for found, absent, failing, unsupported-version, and successful Tailwind paths.
-- [ ] Run `cargo test -p tessera-tailwind --test tailwind`; expect failures.
-- [ ] Implement token-input generation, source discovery, process supervision, and diagnostics inside the adapter; do not add class translation or Kit dependencies.
-- [ ] Run adapter tests and an opt-in real-CLI test only when Tailwind is already installed.
+- [x] Add fake-executable coverage for missing, failing, unsupported-version, and successful Tailwind CLI paths.
+- [x] Implement Tessera-token theme input, CLI invocation, and diagnostics without class translation or Kit dependencies.
+- [x] Run workspace tests and Clippy on stable and Rust 1.88.
+- [ ] Run an opt-in real-CLI test when Tailwind is already installed.
 - [ ] Commit `feat: add first-class Tailwind style adapter` with body `Project contributor`.
+
+### T-11: Add optional UnoCSS support
+
+**Lifecycle:** implemented in the current root-package layout; crate extraction is deferred to T-06
+**Dependencies:** T-01, T-02, T-04
+**Files:** `src/site/toolchain.rs`, `src/site/mod.rs`, `src/doctor.rs`, `crates/tessera-config/`; optional future extraction to `crates/tessera-unocss/`.
+
+**Interfaces:** `UnoCssAdapter::check(&ProjectConfig) -> AdapterStatus` and `UnoCssAdapter::build(&ProjectConfig, BuildMode) -> Result<StyleArtifact, UnoCssError>`.
+
+**Acceptance:** UnoCSS is explicitly opt-in and mutually exclusive with Tailwind for a build. Users provide or select an explicit UnoCSS preset/configuration; Tessera does not assume a default preset, translate `ts-*` classes, or redefine Kit components. `doctor` reports missing or unsupported user-installed tooling. Tessera never installs or downloads UnoCSS. `dev` stops supervised child processes. The default CSS/SCSS build has no UnoCSS dependency.
+
+- [x] Add fake-executable coverage for missing, failing, and successful UnoCSS paths, explicit preset/configuration requirements, and mutual-exclusion validation.
+- [x] Implement source selection, explicit configuration/preset handling, CLI invocation, and diagnostics.
+- [x] Keep UnoCSS optional and independent of the Tessera Kit build.
+- [x] Run workspace tests and Clippy on stable and Rust 1.88.
+- [ ] Commit `feat: add optional UnoCSS style adapter` with body `Project contributor`.
+
+### T-12: Add opt-in JavaScript and TypeScript asset processing
+
+**Lifecycle:** implemented in the current root-package layout; crate extraction is deferred to T-06
+**Dependencies:** T-01, T-04
+**Files:** `src/site/toolchain.rs`, `src/site/mod.rs`, `src/doctor.rs`, `crates/tessera-config/`; optional future extraction to `crates/tessera-scripts/`.
+
+**Interfaces:** A script build configuration with explicit entry points, output behavior, and an opt-in type-check setting; a script pipeline that returns browser-ready assets or a structured error.
+
+**Acceptance:** Script processing is disabled unless explicitly enabled. When enabled, esbuild bundles JavaScript or TypeScript into browser-ready output. TypeScript checking is separate and runs only when requested, using `tsc --noEmit`; esbuild success alone is not reported as type correctness. Missing user-installed tools produce actionable diagnostics, and Tessera never installs them. No JavaScript is added to generated sites by default. The optional interaction package keeps no-JavaScript fallbacks and includes only selected assets. Builds remain staged and preserve the prior `dist/` on script-processing failure.
+
+- [x] Add fake-executable tests for disabled mode, JS/TS bundling, separate type-checking, tool failures, and preserving output on failure.
+- [x] Implement entry-point validation, esbuild bundling, optional `tsc --noEmit`, and actionable tool diagnostics.
+- [x] Document runtime output, type-check separation, explicit tool installation, and the no-JavaScript default.
+- [x] Run workspace tests and Clippy on stable and Rust 1.88.
+- [ ] Commit `feat: add opt-in JavaScript and TypeScript build pipeline` with body `Project contributor`.
 
 ### T-08: Complete the Kit, catalogue, and documentation
 
 **Lifecycle:** proposed  
-**Dependencies:** T-02, T-04, T-05, T-07  
-**Files:** Extend `crates/tessera-kit/assets/`; create `docs/{components,theming,tailwind,accessibility}.md`, `examples/kit-showcase/`, and component fixtures.
+**Dependencies:** T-02, T-04, T-05, T-07, T-11, T-12
+**Files:** Extend `crates/tessera-kit/assets/`; create `docs/{components,theming,tailwind,unocss,scripts,accessibility}.md`, `examples/kit-showcase/`, and component fixtures.
 
 **Acceptance:** Controls, content/data display, website sections, feedback, and optional interactions complete the ambitious Kit families. `list` and documentation use one generated catalogue. Each component documents semantic markup, variants, theme states, responsive behavior, and relevant accessibility expectations. Each interaction has a written keyboard/focus contract plus responsive, dark-mode, reduced-motion, and no-JavaScript fallback evidence. The default Kit remains CSS-first; opt-in interactions use small, dependency-free plain JavaScript. Reference patterns are implemented under Tessera's own API, without compatibility naming.
 
@@ -240,10 +281,10 @@ T-02..T-09 ─> T-10 quality/release gates
 ### T-10: Add quality gates, packaging, and release policy
 
 **Lifecycle:** proposed  
-**Dependencies:** T-01 through T-09  
+**Dependencies:** T-01 through T-09, T-11, T-12
 **Files:** Complete and refine `.github/workflows/ci.yml` and any additional required workflows, `deny.toml`, `CONTRIBUTING.md`, `SECURITY.md`, `README.md`, `CHANGELOG.md`, and `scripts/check-release.sh`; modify workspace manifests and docs. The initial workflow file(s) are created in T-01 so they are ready before the first source push.
 
-**Acceptance:** CI runs formatting, Clippy with warnings denied, tests, generated-site fixtures, and bridge fixtures. Release checks validate versions, package contents, name availability, and license notices. No publishing or deployment command runs automatically.
+**Acceptance:** CI runs formatting, Clippy with warnings denied, tests, generated-site fixtures, bridge fixtures, and fake-executable coverage for optional external tools. Release checks validate versions, package contents, name availability, and license notices. No publishing or deployment command runs automatically.
 
 - [ ] Write a release-package inspection test and local CI checklist.
 - [ ] Complete workflow and release checks without credentials or publish steps; keep publishing and deployment manual and explicit.
@@ -252,10 +293,10 @@ T-02..T-09 ─> T-10 quality/release gates
 
 ## Verification, risks, and handoff
 
-After each task, run `cargo fmt --check`, crate-scoped Clippy with warnings denied, and targeted tests. Before release, run workspace tests, workspace Clippy, generated-site and bridge fixture matrices, package inspection, and browser/keyboard/responsive/dark-mode smoke checks.
+After each task, run `cargo fmt --check`, crate-scoped Clippy with warnings denied, and targeted tests. Before release, run workspace tests, workspace Clippy, generated-site and bridge fixture matrices, package inspection, and browser/keyboard/responsive/dark-mode smoke checks. Exercise default CSS/Grass builds and each explicitly selected external adapter/toolchain independently.
 
-Stop and reconcile if the public name is unavailable, Grass cannot compile a required fixture, the Tailwind CLI contract changes, or NovaStack anchors cannot be proven safe. Do not publish, silently switch compilers, or patch unknown NovaStack layouts.
+Stop and reconcile if the public name is unavailable, Grass cannot compile a required fixture, an external compiler or utility CLI contract changes, esbuild/TypeScript behavior breaks the documented separation, or NovaStack anchors cannot be proven safe. Do not publish, silently switch compilers, silently install tools, or patch unknown NovaStack layouts.
 
-The plan covers every approved layer and isolates Tailwind and bridge risk. The Kit is intentionally ambitious, but its API is constrained by one canonical expression for each concern, a shared token model, and explicit component support criteria. Do not add utilities or variants solely to match another framework's feature list. Keep UnoCSS as a later decision. Do not expand the optional JavaScript package or adopt a TypeScript build step until interaction requirements show the plain-JavaScript approach is insufficient.
+The plan covers every approved layer and isolates style-adapter, script-toolchain, and bridge risk. The Kit is intentionally ambitious, but its API is constrained by one canonical expression for each concern, a shared token model, and explicit component support criteria. Do not add utilities or variants solely to match another framework's feature list. Keep Sass compiler choice explicit, utility engines mutually exclusive, and script processing opt-in; a TypeScript compile does not replace type checking.
 
 Public-name availability and the final public license are external release gates; they do not block T-01. Start T-01 only after implementation authorization. Once T-01 is accepted, T-02 and T-03 may proceed in parallel if the configuration interface remains unchanged.

@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, fs, path::Path};
+use std::{collections::BTreeMap, fs, path::Path, path::PathBuf};
 
 use serde::Deserialize;
 use thiserror::Error;
@@ -11,6 +11,8 @@ pub struct ProjectConfig {
     pub version: Option<String>,
     #[serde(default)]
     pub style: StyleConfig,
+    #[serde(default)]
+    pub scripts: ScriptConfig,
     #[serde(default)]
     pub theme: ThemeConfig,
     #[serde(default, rename = "tokens")]
@@ -43,6 +45,14 @@ impl ThemeTokens {
 pub struct StyleConfig {
     #[serde(default)]
     pub mode: StyleMode,
+    #[serde(default)]
+    pub source: StyleSource,
+    #[serde(default)]
+    pub sass_compiler: SassCompiler,
+    #[serde(default)]
+    pub utility: UtilityEngine,
+    #[serde(default)]
+    pub unocss: UnoCssConfig,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
@@ -52,6 +62,53 @@ pub enum StyleMode {
     Scss,
     Css,
     Tailwind,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum StyleSource {
+    #[default]
+    Css,
+    Scss,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SassCompiler {
+    #[default]
+    Grass,
+    DartSass,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum UtilityEngine {
+    #[default]
+    None,
+    Tailwind,
+    UnoCss,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnoCssConfig {
+    #[serde(default)]
+    pub preset: Option<String>,
+    #[serde(default)]
+    pub config: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ScriptConfig {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub entry_points: Vec<PathBuf>,
+    #[serde(default)]
+    pub typecheck: bool,
+    #[serde(default)]
+    pub interactions: bool,
 }
 
 #[derive(Debug, Error)]
@@ -66,6 +123,10 @@ pub enum ConfigError {
     Parse(#[from] toml::de::Error),
     #[error("invalid style.mode {value:?}; expected scss, css, or tailwind")]
     InvalidStyleMode { value: String },
+    #[error("style.mode {mode:?} conflicts with style.source {source_name:?}")]
+    ConflictingStyleSource { mode: String, source_name: String },
+    #[error("style.mode = \"tailwind\" conflicts with style.utility {utility:?}")]
+    ConflictingUtilityEngine { utility: String },
 }
 
 impl ProjectConfig {
@@ -79,22 +140,80 @@ impl ProjectConfig {
     }
 
     pub fn parse(contents: &str) -> Result<Self, ConfigError> {
-        let value: toml::Value = toml::from_str(contents)?;
-
-        let mode = value
+        let mut value: toml::Value = toml::from_str(contents)?;
+        let normalize_style_mode = value
             .get("style")
             .and_then(toml::Value::as_table)
-            .and_then(|style| style.get("mode"))
-            .and_then(toml::Value::as_str);
-        if let Some(mode) = mode {
-            if !matches!(mode, "scss" | "css" | "tailwind") {
-                return Err(ConfigError::InvalidStyleMode {
-                    value: mode.to_owned(),
-                });
+            .is_some_and(|style| {
+                style.contains_key("mode")
+                    || style.contains_key("source")
+                    || style.contains_key("utility")
+            });
+
+        if let Some(style) = value.get_mut("style").and_then(toml::Value::as_table_mut) {
+            if let Some(mode_value) = style.get("mode") {
+                let mode = mode_value
+                    .as_str()
+                    .ok_or_else(|| ConfigError::InvalidStyleMode {
+                        value: mode_value.to_string(),
+                    })?;
+                let (legacy_source, legacy_utility) = match mode {
+                    "scss" => ("scss", None),
+                    "css" => ("css", None),
+                    "tailwind" => ("scss", Some("tailwind")),
+                    _ => {
+                        return Err(ConfigError::InvalidStyleMode {
+                            value: mode.to_owned(),
+                        });
+                    }
+                };
+
+                if let Some(source_value) = style.get("source") {
+                    if let Some(source_value) = source_value.as_str() {
+                        if source_value != legacy_source {
+                            return Err(ConfigError::ConflictingStyleSource {
+                                mode: mode.to_owned(),
+                                source_name: source_value.to_owned(),
+                            });
+                        }
+                    }
+                } else {
+                    style.insert(
+                        "source".to_owned(),
+                        toml::Value::String(legacy_source.to_owned()),
+                    );
+                }
+
+                if let Some(legacy_utility) = legacy_utility {
+                    if let Some(utility_value) = style.get("utility") {
+                        if let Some(utility_value) = utility_value.as_str() {
+                            if utility_value != legacy_utility {
+                                return Err(ConfigError::ConflictingUtilityEngine {
+                                    utility: utility_value.to_owned(),
+                                });
+                            }
+                        }
+                    } else {
+                        style.insert(
+                            "utility".to_owned(),
+                            toml::Value::String(legacy_utility.to_owned()),
+                        );
+                    }
+                }
             }
         }
 
-        Ok(value.try_into()?)
+        let mut config: Self = value.try_into()?;
+        if normalize_style_mode {
+            config.style.mode = match config.style.utility {
+                UtilityEngine::Tailwind => StyleMode::Tailwind,
+                UtilityEngine::None | UtilityEngine::UnoCss => match config.style.source {
+                    StyleSource::Css => StyleMode::Css,
+                    StyleSource::Scss => StyleMode::Scss,
+                },
+            };
+        }
+        Ok(config)
     }
 
     pub fn theme_tokens(&self) -> ThemeTokens {

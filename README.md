@@ -16,6 +16,8 @@
 - 🔄 **Live Development Server**: `tessera dev` serves your static site locally with automatic file watching across `content/`, `layouts/`, `styles/`, and `tessera.toml`.
 - 🩺 **Project Diagnostics**: `tessera doctor` checks token validity, configuration health, content counts, and template engine status.
 - 📦 **Asset Pipeline**: Automatically copies static assets from `public/` into `dist/`.
+- 🧵 **Optional Style Toolchains**: Compile SCSS with Grass by default or an explicitly selected Dart Sass CLI. Tailwind CSS and UnoCSS are optional, mutually exclusive utility adapters.
+- 🧰 **Optional Script Build**: Bundle explicitly selected JavaScript or TypeScript entry points with esbuild. Type checking is a separate opt-in `tsc --noEmit` step.
 - 🧹 **Clean & Configurable**: Custom port flag (`-p` / `--port`), artifact cleaner (`tessera clean`), and structured logging support via `env_logger`.
 
 ---
@@ -49,8 +51,10 @@ my-site/
 │   └── index.md
 ├── layouts/           # 🖼️ HTML layout templates
 │   └── base.html
-├── styles/            # 🎨 Custom CSS/SCSS stylesheets
+├── styles/            # 🎨 Custom CSS or SCSS stylesheets
 │   └── main.css
+├── scripts/           # 🧩 Optional JavaScript/TypeScript entry points
+│   └── main.ts
 ├── public/            # 📁 Static assets copied unchanged into dist/
 ├── templates/         # 📑 Page templates and component stubs
 ├── dist/              # 🌐 Generated static output (ignored by git)
@@ -146,6 +150,46 @@ tessera clean
 
 ---
 
+## 🎨 Styles, utility adapters, and scripts
+
+Generated projects default to CSS, with all external toolchains disabled. Tessera does not install npm packages or download compiler binaries for you.
+
+```toml
+[style]
+source = "scss"             # css or scss
+sass_compiler = "grass"     # grass or dart-sass
+utility = "none"            # none, tailwind, or uno-css
+
+[scripts]
+enabled = false
+entry_points = ["scripts/main.ts"]
+typecheck = false
+interactions = false
+```
+
+Grass compiles SCSS in-process. Selecting `sass_compiler = "dart-sass"` requires the `sass` executable on `PATH`. Tailwind requires its v4 `tailwindcss` CLI, while UnoCSS requires `unocss` and either a root `uno.config.*` file or an explicit preset:
+
+```toml
+[style]
+utility = "uno-css"
+
+[style.unocss]
+preset = "wind4"
+```
+
+Select only one utility engine per build. Both adapters are independent of Tessera component classes and never translate `ts-*` classes.
+
+To bundle scripts, enable the pipeline. The esbuild executable is required; TypeScript checking separately requires `tsc`:
+
+```toml
+[scripts]
+enabled = true
+entry_points = ["scripts/main.ts"]
+typecheck = true
+```
+
+When scripts are disabled, Tessera emits no JavaScript by default. Set `interactions = true` to include Tessera's optional plain JavaScript enhancements.
+
 ## 🎨 Design Tokens & Tessera Kit
 
 ### Configuration (`tessera.toml`)
@@ -178,9 +222,9 @@ Tessera Kit provides ready-to-use semantic classes out-of-the-box:
 
 ---
 
-## ⚡ Progressive Enhancement & Interactivity
+## ⚡ Optional Progressive Enhancement & Interactivity
 
-Tessera ships an ultra-lightweight (~1.5 KB), zero-dependency client script (`dist/tessera.js`) that enhances your pure HTML/CSS site with accessible interactivity.
+Tessera can include its zero-dependency client script (`dist/tessera.js`) when `[scripts].interactions = true`. Generated sites omit it by default. Keep native HTML and CSS fallbacks usable when interactions are disabled.
 
 Components declare interactive behavior via simple `data-ts-*` attributes:
 
