@@ -57,6 +57,10 @@ pub fn run() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let token_set = TokenSet::default();
     let _engine = Engine::new(&token_set);
     println!("[doctor] ✓ Site engine instantiated");
+    println!(
+        "[doctor] ✓ Kit catalog loaded with {} patterns",
+        crate::kit::catalog::ENTRIES.len()
+    );
 
     Ok(())
 }

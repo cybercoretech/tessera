@@ -1,6 +1,22 @@
+pub mod catalog;
 pub mod controls;
 pub mod foundations;
 pub mod layout;
+
+/// Core, dependency-free CSS shipped with every generated Tessera site.
+pub const STYLES: &str = concat!(
+    include_str!("foundations.css"),
+    "\n",
+    include_str!("layout.css"),
+    "\n",
+    include_str!("controls.css"),
+    "\n",
+    include_str!("content.css"),
+    "\n",
+    include_str!("disclosure.css"),
+    "\n",
+    include_str!("feedback.css")
+);
 
 use crate::token::TokenSet;
 

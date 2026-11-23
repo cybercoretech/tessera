@@ -1,0 +1,24 @@
+name = "tessera-kit-showcase"
+version = "0.1.0"
+
+[style]
+source = "css"
+
+[theme.tokens]
+primary = "#1e5949"
+secondary = "#df8750"
+color_bg = "#f6f4ee"
+color_text = "#263a34"
+color_heading = "#172b25"
+color_muted = "#52645d"
+color_card = "#fffefa"
+border_color = "#d9ded6"
+color_code_bg = "#e9eee8"
+color_code_block = "#14231f"
+color_alert_bg = "#e8f1ea"
+color_alert_text = "#1e5949"
+color_focus = "#155b4c"
+font_main = "'Trebuchet MS', 'Gill Sans', sans-serif"
+font_display = "'Iowan Old Style', 'Palatino Linotype', Georgia, serif"
+container_max = "78rem"
+grid_gap = "1.25rem"

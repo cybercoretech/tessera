@@ -1,0 +1,134 @@
+/* Content patterns stay grounded in native navigation and table semantics. */
+.ts-breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.ts-breadcrumbs__list > li + li::before {
+  margin-inline-end: 0.45rem;
+  color: var(--ts-color-muted, #52645d);
+  content: "/";
+}
+
+.ts-breadcrumbs [aria-current="page"] {
+  color: var(--ts-color-heading, #20312c);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ts-avatar {
+  display: inline-grid;
+  width: 2.75rem;
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  color: var(--ts-color-avatar-text, #fff);
+  background: var(--ts-color-avatar, var(--ts-primary, #155b4c));
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+img.ts-avatar {
+  object-fit: cover;
+}
+
+.ts-media {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+
+.ts-media__visual {
+  margin: 0;
+}
+
+.ts-media__body {
+  min-width: 0;
+}
+
+.ts-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border: 1px solid var(--ts-border-color, #d9ded7);
+  border-radius: 0.65rem;
+  background: var(--ts-color-card, #fff);
+}
+
+.ts-table {
+  width: 100%;
+  min-width: 38rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.ts-table caption {
+  padding: 1rem;
+  color: var(--ts-color-heading, #20312c);
+  font-weight: 700;
+  text-align: start;
+}
+
+.ts-table th,
+.ts-table td {
+  padding: 0.75rem 1rem;
+  text-align: start;
+  vertical-align: middle;
+  border: 0;
+  border-top: 1px solid var(--ts-border-color, #d9ded7);
+}
+
+.ts-table thead th {
+  color: var(--ts-color-heading, #20312c);
+  background: var(--ts-color-code-bg, #f3f4f6);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ts-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--ts-color-bg, #fff) 78%, var(--ts-color-code-bg, #f3f4f6));
+}
+
+.ts-pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ts-pagination a {
+  display: inline-grid;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  place-items: center;
+  padding-inline: 0.65rem;
+  border: 1px solid var(--ts-border-color, #d9ded7);
+  border-radius: 0.4rem;
+  color: var(--ts-color-text, #263a34);
+  text-decoration: none;
+}
+
+.ts-pagination a:hover {
+  background: var(--ts-color-code-bg, #f3f4f6);
+}
+
+.ts-pagination a[aria-current="page"] {
+  border-color: var(--ts-primary, #155b4c);
+  color: #fff;
+  background: var(--ts-primary, #155b4c);
+  font-weight: 700;
+}

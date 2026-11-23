@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A living showcase of Tessera's token-driven CSS foundations and layout patterns.">
+  <meta name="theme-color" content="#f6f4ee">
+  <title>{{title}} · Tessera</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="showcase-skip" href="#main">Skip to content</a>
+  <header class="showcase-header">
+    <div class="ts-container">
+      <nav class="ts-nav" aria-label="Main navigation">
+        <a class="showcase-brand" href="/" aria-label="Tessera home">
+          <span class="showcase-mark" aria-hidden="true">T/</span>
+          <span>Tessera <span class="showcase-brand__sub">CSS foundations</span></span>
+        </a>
+        <ul class="ts-nav__links">
+          <li><a href="#foundations">Foundations</a></li>
+          <li><a href="#themes">Themes</a></li>
+          <li><a href="#layouts">Layouts</a></li>
+          <li><a href="#components">Components</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    {{content}}
+  </main>
+  <footer class="showcase-footer">
+    <div class="ts-container ts-cluster">
+      <span class="showcase-mark" aria-hidden="true">T/</span>
+      <p>Built with Tessera. CSS first, yours to shape.</p>
+      <a href="https://github.com/cybercoretech/tessera">Explore the source</a>
+    </div>
+  </footer>
+</body>
+</html>

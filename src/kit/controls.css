@@ -1,0 +1,174 @@
+/* Native controls keep their semantics; Kit classes provide consistent styling. */
+.ts-button--secondary {
+  color: var(--ts-color-secondary-contrast, #172b25);
+}
+
+.ts-button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.ts-label {
+  color: var(--ts-color-heading, #20312c);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.ts-field {
+  display: grid;
+  align-items: start;
+  gap: 0.45rem;
+}
+
+.ts-input,
+.ts-select,
+.ts-textarea {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--ts-border-color, #d9ded7);
+  border-radius: 0.4rem;
+  color: var(--ts-color-text, #263a34);
+  background: var(--ts-color-bg, #fffefa);
+}
+
+.ts-select {
+  cursor: pointer;
+}
+
+.ts-textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.ts-input::placeholder,
+.ts-textarea::placeholder {
+  color: var(--ts-color-muted, #52645d);
+  opacity: 0.8;
+}
+
+.ts-input[aria-invalid="true"],
+.ts-select[aria-invalid="true"],
+.ts-textarea[aria-invalid="true"] {
+  border-color: var(--ts-color-error, #9b2525);
+}
+
+.ts-input:disabled,
+.ts-select:disabled,
+.ts-textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.ts-choice-group {
+  display: grid;
+  min-width: 0;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ts-choice-group legend {
+  margin-bottom: 0.55rem;
+  color: var(--ts-color-heading, #20312c);
+  font-weight: 700;
+}
+
+.ts-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  color: var(--ts-color-text, #263a34);
+  cursor: pointer;
+}
+
+.ts-choice > input {
+  width: 1.1rem;
+  height: 1.1rem;
+  min-height: 1.1rem;
+  flex: 0 0 auto;
+  margin: 0.2rem 0 0;
+  accent-color: var(--ts-primary, #155b4c);
+}
+
+.ts-choice > input:disabled {
+  cursor: not-allowed;
+}
+
+.ts-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--ts-color-text, #263a34);
+  cursor: pointer;
+}
+
+.ts-switch input[type="checkbox"][role="switch"] {
+  appearance: none;
+  display: grid;
+  width: 3rem;
+  height: 1.75rem;
+  min-height: 1.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 0.15rem;
+  border: 1px solid var(--ts-border-color, #aebbb3);
+  border-radius: 999px;
+  background: var(--ts-color-code-bg, #e9eee8);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.ts-switch input[type="checkbox"][role="switch"]::before {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--ts-color-card, #fffefa);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+  content: "";
+  transition: transform 0.15s ease;
+}
+
+.ts-switch input[type="checkbox"][role="switch"]:checked {
+  border-color: var(--ts-primary, #155b4c);
+  background: var(--ts-primary, #155b4c);
+}
+
+.ts-switch input[type="checkbox"][role="switch"]:checked::before {
+  transform: translateX(1.25rem);
+}
+
+.ts-switch input[type="checkbox"][role="switch"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+@media (forced-colors: active) {
+  .ts-switch input[type="checkbox"][role="switch"] {
+    appearance: auto;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .ts-switch input[type="checkbox"][role="switch"]::before {
+    content: none;
+  }
+}
+
+.ts-help {
+  margin: 0;
+  color: var(--ts-color-muted, #52645d);
+  font-size: 0.8rem;
+}
+
+.ts-error {
+  margin: 0;
+  color: var(--ts-color-error, #9b2525);
+  font-size: 0.85rem;
+  font-weight: 600;
+}

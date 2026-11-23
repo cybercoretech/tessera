@@ -30,6 +30,8 @@ impl StyleCompiler {
         // 2. Emit Tessera Kit base semantic styles
         css.push_str(Self::tessera_kit_base());
         css.push('\n');
+        css.push_str(crate::kit::STYLES);
+        css.push('\n');
 
         // 3. Compile or append the configured project stylesheet, if present.
         let (paths, is_scss) = match config.source {

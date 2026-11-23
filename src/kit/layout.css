@@ -1,0 +1,43 @@
+/* Tessera layout primitives use intrinsic sizing and wrap before overflowing. */
+.ts-container {
+  width: calc(100% - var(--ts-page-gutter) - var(--ts-page-gutter));
+  max-width: var(--ts-container-max, 76rem);
+  padding-inline: 0;
+  container: ts-page / inline-size;
+}
+
+.ts-section {
+  padding-block: clamp(2.5rem, 7vw, 6rem);
+}
+
+.ts-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: var(--ts-grid-gap, 1.5rem);
+}
+
+.ts-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ts-stack-gap, 1rem);
+}
+
+.ts-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ts-cluster-gap, 0.75rem);
+}
+
+.ts-sidebar-layout {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.85fr) minmax(0, 2fr);
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+@container ts-page (max-width: 52rem) {
+  .ts-sidebar-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

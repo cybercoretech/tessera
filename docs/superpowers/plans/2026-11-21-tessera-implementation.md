@@ -33,6 +33,7 @@
 - CSS and SCSS source selection is independent of the selected Sass compiler and optional utility engine. Grass is the default Sass compiler; Dart Sass is an explicit compatibility option.
 - At most one utility engine (`none`, Tailwind, or UnoCSS) is active for a build. Tailwind and UnoCSS remain adapters around the Tessera-owned Kit and cannot redefine its API.
 - Script processing is disabled by default. When enabled, esbuild bundles JavaScript or TypeScript; TypeScript type checking is a separate opt-in check using `tsc --noEmit`.
+- Tessera's own documentation and Kit site should be built with Tessera from its catalog, guides, and showcase. Cloudflare Pages (for example, `tessera.pages.dev`) is a later hosting target; deployment remains explicit and is not part of implementation builds.
 - Materialize is an optional theme direction, not Tessera's default identity or a separate component API.
 - UIkit and Semantic UI are pattern references only. Adopt an idea only for a clear use case, then implement it using Tessera's API and support contracts.
 - Do not model the core API on Bootstrap or adopt a fixed 12-column grid contract.
@@ -120,18 +121,20 @@ T-02..T-09 + T-11..T-12 ─> T-10 quality/release gates
 
 ### T-02: Implement tokens and Tessera Kit foundations
 
-**Lifecycle:** proposed  
+**Lifecycle:** in progress; the first foundation styles and showcase are implemented in the current root-package layout
 **Dependencies:** T-01  
-**Files:** Create `crates/tessera-kit/`, `tests/kit.rs`, and shared style templates.
+**Files:** `src/token.rs`, `src/kit/{foundations.rs,layout.rs,controls.rs,catalog.rs,foundations.css,layout.css,controls.css,content.css,disclosure.css,feedback.css}`, `src/site/style.rs`, `docs/kit/`, and `examples/kit-showcase/`. A separate `crates/tessera-kit/` extraction remains deferred.
 
-**Interfaces:** `render_tokens(tokens: &ThemeTokens, mode: StyleMode) -> Result<String, KitError>` and `KitArtifact { css, component_catalog }`.
+**Interfaces:** `TokenSet::compile_css()` emits token custom properties; `crate::kit::STYLES` embeds the core CSS foundations and layout primitives in site builds.
 
-**Acceptance:** the token model emits CSS variables and SCSS variables/maps. The Kit includes reset, typography, color roles, light/dark theme foundations, containers, CSS Grid/Flexbox/intrinsic layout primitives, container-query patterns, curated utilities, visible focus states, and reduced-motion defaults. Every Tessera class starts with `ts-`. Each concern has one documented canonical API; there is no fixed 12-column contract or duplicate helper family. Core Kit output has no Tailwind or JavaScript dependency.
+**Acceptance:** the complete Kit scope remains reset, typography, color roles, light/dark theme foundations, containers, CSS Grid/Flexbox/intrinsic layout primitives, container-query patterns, curated utilities, visible focus states, and reduced-motion defaults. Delivered slices cover theme-aware foundations, responsive layout, forms, content and disclosure patterns, feedback tones, and a static showcase. CSS/SCSS token emitters and canonical catalog metadata are implemented; generated catalog docs, broader component coverage, and Kit snapshots remain open. Every Tessera Kit class starts with `ts-`; each concern has one documented canonical API; there is no fixed 12-column contract or duplicate helper family. Core Kit output has no Tailwind or JavaScript dependency.
 
 - [ ] Write output snapshots and a class-prefix regression test.
-- [ ] Run `cargo test -p tessera-kit --test kit`; expect failures.
-- [ ] Implement embedded Kit assets, token rendering, and catalogue metadata.
-- [ ] Run formatting, Clippy, and snapshot tests; inspect snapshots before accepting them.
+- [x] Embed core Kit styles into the CSS-first site build and add the first responsive layout primitives.
+- [x] Add an editable static showcase demonstrating tokens, typography, layouts, controls, and focus styling.
+- [x] Implement SCSS token output and canonical component catalogue metadata.
+- [x] Run formatting and Clippy with warnings denied.
+- [ ] Add Kit snapshots and class-prefix checks; inspect snapshots before accepting them.
 - [ ] Commit `feat: add token-driven Tessera Kit foundation` with body `Project contributor`.
 
 ### T-03: Scaffold editable starter projects
@@ -246,19 +249,23 @@ T-02..T-09 + T-11..T-12 ─> T-10 quality/release gates
 
 ### T-08: Complete the Kit, catalogue, and documentation
 
-**Lifecycle:** proposed  
+**Lifecycle:** in progress; foundations, controls, themes, content, disclosure, and feedback slices are in the current root-package layout
 **Dependencies:** T-02, T-04, T-05, T-07, T-11, T-12
-**Files:** Extend `crates/tessera-kit/assets/`; create `docs/{components,theming,tailwind,unocss,scripts,accessibility}.md`, `examples/kit-showcase/`, and component fixtures.
+**Files:** `src/kit/{catalog.rs,foundations.css,layout.css,controls.css,content.css,disclosure.css,feedback.css}`, `docs/kit/`, and `examples/kit-showcase/`; a separate `crates/tessera-kit/` extraction remains deferred. Tessera's future project site will consume this catalog and documentation as a Tessera-built static site, with Cloudflare Pages hosting considered separately.
 
 **Acceptance:** Controls, content/data display, website sections, feedback, and optional interactions complete the ambitious Kit families. `list` and documentation use one generated catalogue. Each component documents semantic markup, variants, theme states, responsive behavior, and relevant accessibility expectations. Each interaction has a written keyboard/focus contract plus responsive, dark-mode, reduced-motion, and no-JavaScript fallback evidence. The default Kit remains CSS-first; opt-in interactions use small, dependency-free plain JavaScript. Reference patterns are implemented under Tessera's own API, without compatibility naming.
 
-- [ ] Establish component support criteria before expanding the catalog: markup contract, visual states, keyboard behavior where relevant, responsive behavior, theme behavior, fallback, and documentation.
-- [ ] Treat Materialize as an optional theme direction only; demonstrate theme changes do not change component APIs.
+- [x] Establish canonical names and semantic markup contracts for foundation, control, navigation, data, and disclosure patterns.
+- [x] Document forms, feedback tones, theme behavior, composable website sections, and content/accessibility contracts.
+- [x] Add light/dark theme previews to the showcase without changing component markup.
+- [x] Expand form examples with selects, textareas, radio choices, and a native switch; add a media-object example.
+- [ ] Establish complete component support criteria before expanding the remaining catalog: visual states, keyboard behavior where relevant, responsive behavior, theme behavior, fallbacks, and documentation.
+- [x] Treat Materialize as an optional theme direction only; demonstrate theme changes do not change component APIs.
 - [ ] Keep UIkit and Semantic UI as research references and require a documented user need before adopting a pattern.
 
-- [ ] Add failing component/accessibility fixtures for each family before styles or markup.
-- [ ] Implement each family in an independently reviewable commit.
-- [ ] Verify generated docs have no duplicated component registry.
+- [ ] Add component/accessibility fixtures for each family.
+- [ ] Implement the remaining families in independently reviewable slices.
+- [ ] Generate catalogue documentation from the canonical registry to prevent duplicated component lists.
 - [ ] Run component fixtures and manual keyboard checks for interactions.
 - [ ] Commit each family as `feat: add Tessera Kit <family>` with body `Project contributor`.
 

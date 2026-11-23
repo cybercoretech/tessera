@@ -1,0 +1,18 @@
+/* Feedback tones are explicit states on the one canonical alert pattern. */
+.ts-alert[data-tone="success"] {
+  border-left-color: var(--ts-color-success, #245b37);
+  color: var(--ts-color-success-text, #214b30);
+  background: var(--ts-color-success-surface, #e8f3eb);
+}
+
+.ts-alert[data-tone="warning"] {
+  border-left-color: var(--ts-color-warning, #7a4b00);
+  color: var(--ts-color-warning-text, #583900);
+  background: var(--ts-color-warning-surface, #fff2d5);
+}
+
+.ts-alert[data-tone="error"] {
+  border-left-color: var(--ts-color-error, #9b2525);
+  color: var(--ts-color-error-text, #762020);
+  background: var(--ts-color-error-surface, #fbe9e8);
+}

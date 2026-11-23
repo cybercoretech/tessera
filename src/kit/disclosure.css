@@ -1,0 +1,30 @@
+/* Native details/summary provide disclosure behavior without JavaScript. */
+.ts-accordion {
+  border-top: 1px solid var(--ts-border-color, #d9ded7);
+}
+
+.ts-accordion__item {
+  border-bottom: 1px solid var(--ts-border-color, #d9ded7);
+}
+
+.ts-accordion__trigger {
+  padding-block: 1.1rem;
+  color: var(--ts-color-heading, #20312c);
+  cursor: pointer;
+  font-weight: 700;
+  list-style-position: outside;
+}
+
+.ts-accordion__item[open] > .ts-accordion__trigger {
+  color: var(--ts-primary, #155b4c);
+}
+
+.ts-accordion__panel {
+  max-width: 68ch;
+  padding: 0 0 1.2rem;
+  color: var(--ts-color-muted, #52645d);
+}
+
+.ts-accordion__panel > :last-child {
+  margin-bottom: 0;
+}

@@ -190,6 +190,18 @@ typecheck = true
 
 When scripts are disabled, Tessera emits no JavaScript by default. Set `interactions = true` to include Tessera's optional plain JavaScript enhancements.
 
+## 🧱 Tessera Kit showcase
+
+The editable [Kit showcase](examples/kit-showcase/) demonstrates the current foundations, layouts, controls, content patterns, and native disclosure component. From its directory, build the static page with:
+
+```sh
+cargo run --manifest-path ../../Cargo.toml -- build
+```
+
+The generated page is written to `examples/kit-showcase/dist/`.
+
+Kit references: [foundations](docs/kit/foundations.md), [forms](docs/kit/forms.md), [themes](docs/kit/theming.md), [content patterns](docs/kit/content-patterns.md), and [sections and feedback](docs/kit/sections-feedback.md).
+
 ## 🎨 Design Tokens & Tessera Kit
 
 ### Configuration (`tessera.toml`)
