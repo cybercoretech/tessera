@@ -71,8 +71,22 @@ mod generators {
         Ok(())
     }
 
+    /// Component names become a file name and an HTML class inside a Rust
+    /// string, so keep them to a letter followed by letters, digits, `-` or `_`.
+    fn is_valid_component_name(name: &str) -> bool {
+        let mut chars = name.chars();
+        matches!(chars.next(), Some(c) if c.is_ascii_alphabetic())
+            && chars.all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+    }
+
     /// Create a stub Rust component file.
     pub fn generate_component(name: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        if !is_valid_component_name(name) {
+            return Err(format!(
+                "Invalid component name '{name}': use a letter followed by letters, digits, '-' or '_'"
+            )
+            .into());
+        }
         let comp_dir = Path::new("src").join("components");
         fs::create_dir_all(&comp_dir)?;
         let file_name = format!("{name}.rs");
@@ -83,7 +97,8 @@ mod generators {
         let mut file = fs::File::create(&target_path)?;
         writeln!(file, "// {name} component placeholder")?;
         writeln!(file, "pub fn render() -> &'static str {{")?;
-        writeln!(file, "    \"<div class=\"{name}\"></div>\"")?;
+        // A raw string keeps the HTML attribute quotes valid inside the Rust literal.
+        writeln!(file, "    r#\"<div class=\"{name}\"></div>\"#")?;
         writeln!(file, "}}")?;
         Ok(())
     }
