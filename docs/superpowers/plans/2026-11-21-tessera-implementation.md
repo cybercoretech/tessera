@@ -121,20 +121,20 @@ T-02..T-09 + T-11..T-12 ─> T-10 quality/release gates
 
 ### T-02: Implement tokens and Tessera Kit foundations
 
-**Lifecycle:** in progress; the first foundation styles and showcase are implemented in the current root-package layout
+**Lifecycle:** in progress; foundation styles, the showcase, exact CSS snapshot, and class-prefix checks are implemented in the current root-package layout
 **Dependencies:** T-01  
 **Files:** `src/token.rs`, `src/kit/{foundations.rs,layout.rs,controls.rs,catalog.rs,foundations.css,layout.css,controls.css,content.css,disclosure.css,feedback.css}`, `src/site/style.rs`, `docs/kit/`, and `examples/kit-showcase/`. A separate `crates/tessera-kit/` extraction remains deferred.
 
 **Interfaces:** `TokenSet::compile_css()` emits token custom properties; `crate::kit::STYLES` embeds the core CSS foundations and layout primitives in site builds.
 
-**Acceptance:** the complete Kit scope remains reset, typography, color roles, light/dark theme foundations, containers, CSS Grid/Flexbox/intrinsic layout primitives, container-query patterns, curated utilities, visible focus states, and reduced-motion defaults. Delivered slices cover theme-aware foundations, responsive layout, forms, content and disclosure patterns, feedback tones, and a static showcase. CSS/SCSS token emitters and canonical catalog metadata are implemented; generated catalog docs, broader component coverage, and Kit snapshots remain open. Every Tessera Kit class starts with `ts-`; each concern has one documented canonical API; there is no fixed 12-column contract or duplicate helper family. Core Kit output has no Tailwind or JavaScript dependency.
+**Acceptance:** the complete Kit scope remains reset, typography, color roles, light/dark theme foundations, containers, CSS Grid/Flexbox/intrinsic layout primitives, container-query patterns, curated utilities, visible focus states, and reduced-motion defaults. Delivered slices cover theme-aware foundations, responsive layout, forms, content and disclosure patterns, feedback tones, and a static showcase. CSS/SCSS token emitters and canonical catalog metadata are implemented; the generated CSS snapshot and class-prefix regression checks pass. Generated catalog docs and broader component coverage remain open. Every Tessera Kit class starts with `ts-`; each concern has one documented canonical API; there is no fixed 12-column contract or duplicate helper family. Core Kit output has no Tailwind or JavaScript dependency.
 
-- [ ] Write output snapshots and a class-prefix regression test.
+- [x] Snapshot generated Kit CSS and check catalog/CSS class selectors use the `ts-` prefix.
 - [x] Embed core Kit styles into the CSS-first site build and add the first responsive layout primitives.
 - [x] Add an editable static showcase demonstrating tokens, typography, layouts, controls, and focus styling.
 - [x] Implement SCSS token output and canonical component catalogue metadata.
 - [x] Run formatting and Clippy with warnings denied.
-- [ ] Add Kit snapshots and class-prefix checks; inspect snapshots before accepting them.
+- [x] Add and inspect the Kit CSS snapshot and class-prefix regression checks.
 - [ ] Commit `feat: add token-driven Tessera Kit foundation` with body `Project contributor`.
 
 ### T-03: Scaffold editable starter projects
