@@ -28,6 +28,23 @@ pub fn create_project(name: &str) -> Result<(), Box<dyn std::error::Error + Send
         "// Enable scripts in tessera.toml to bundle this entry point.\nconsole.log('⚡ Tessera site initialized');\n";
     fs::write(script_path, script_content)?;
 
+    // Give the project a stylesheet of its own; the build appends it after the Kit.
+    let style_path = project_dir.join("styles").join("main.css");
+    let style_content = "/* Your site's styles. `tessera build` adds this file to dist/styles.css
+   after the Tessera Kit. Use the --ts-* tokens from tessera.toml so a token
+   change restyles your own rules too. */
+
+body {
+  font-family: var(--ts-font-main, system-ui, sans-serif);
+}
+
+::selection {
+  background: var(--ts-primary);
+  color: #ffffff;
+}
+";
+    fs::write(style_path, style_content)?;
+
     // Write a minimal tessera.toml
     let toml_path = project_dir.join("tessera.toml");
     let toml_content = format!(
