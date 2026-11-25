@@ -35,6 +35,9 @@ enum Commands {
         /// Port to listen on
         #[arg(short, long, default_value_t = 8000)]
         port: u16,
+        /// Address to listen on; use 0.0.0.0 to allow other devices on your network
+        #[arg(long, default_value_t = std::net::IpAddr::from([127, 0, 0, 1]))]
+        host: std::net::IpAddr,
     },
     /// Run diagnostic health-checks on the current project.
     Doctor,
@@ -170,8 +173,8 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             generators::set_token(&key, &value)?;
             println!("Set token '{key} = {value}' in tessera.toml");
         }
-        Commands::Dev { port } => {
-            dev::run(Some(port))?;
+        Commands::Dev { port, host } => {
+            dev::run(host, port)?;
         }
         Commands::Doctor => {
             doctor::run()?;
