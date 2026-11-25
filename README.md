@@ -56,7 +56,9 @@ my-site/
 ├── scripts/           # 🧩 Optional JavaScript/TypeScript entry points
 │   └── main.ts
 ├── public/            # 📁 Static assets copied unchanged into dist/
-├── templates/         # 📑 Page templates and component stubs
+├── templates/         # 📑 Page templates used by `tessera add-page`
+│   └── page.md
+├── src/components/    # 🧩 Component stubs from `tessera add-component`
 ├── dist/              # 🌐 Generated static output (ignored by git)
 └── tessera.toml       # ⚙️ Project metadata and design tokens
 ```
