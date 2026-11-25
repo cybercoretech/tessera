@@ -1,0 +1,19 @@
+name = "night-shift"
+version = "0.1.0"
+
+[theme.tokens]
+primary = "#7c3aed"
+secondary = "#00e5ff"
+color_bg = "#0a0d14"
+color_text = "#c9d4df"
+color_heading = "#f2f6fa"
+
+[style]
+source = "css"
+sass_compiler = "grass"
+
+[scripts]
+enabled = false
+entry_points = ["scripts/main.ts"]
+typecheck = false
+interactions = false

@@ -180,8 +180,9 @@ kit/
 | `website/styles/main.css` | Mono type, editor shell, panes, sheets, scrollbars, mobile rules |
 | `website/tessera.toml` | Fallback tokens moved to the Cybercore palette |
 | `website/public/site.js` | New: drawer, active file, typing, playground, sheets |
-| `website/public/backdrop.webp` | New: generated editor backdrop |
+| `website/public/backdrop.svg` | New: generated editor backdrop (SVG stays sharp at 2x, so it replaced the planned WebP) |
 | `website/tools/make-backdrop.py` | New: backdrop generator (adapted from dwcode) |
+| `website/fixtures/night-shift/` | New: the real demo project recorded for the live build hero |
 | `website/README.md` | Note the new structure and script |
 
 ## Verification
