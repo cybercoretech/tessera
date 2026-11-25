@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tessera is a Rust CLI for building static websites with an independent, CSS-first Kit.">
+  <meta name="theme-color" content="#0b141c">
+  <title>{{title}} · Tessera</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cybercoretech.github.io/kit/chooser.css">
+  <script>
+    window.SITE = {
+      defaultTheme: "cybercore-tech",
+      themeVars: {
+        bg: ["--site-paper", "--ts-color-bg"],
+        white: ["--site-ink", "--ts-color-text", "--ts-color-heading"],
+        panel: ["--site-paper-light", "--ts-color-card"],
+        line: ["--site-line", "--ts-border-color"],
+        muted: ["--site-muted", "--ts-color-muted"],
+        acid_green: ["--site-blue", "--ts-primary"],
+        cyan: ["--site-silver", "--site-accent-text", "--ts-secondary"],
+        hot_pink: null,
+        purple: null,
+        orange: null,
+        red: null
+      }
+    };
+  </script>
+  <script type="module" src="https://cybercoretech.github.io/kit/chooser.js"></script>
+  <script type="module" src="https://cybercoretech.github.io/kit/contact.js"></script>
+</head>
+<body>
+  <a class="site-skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="ts-container">
+      <nav class="ts-nav site-nav" aria-label="Main navigation">
+        <a class="site-brand" href="/" aria-label="Tessera home">
+          <span class="site-brand__mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span>tessera<span class="site-brand__period">.</span></span>
+        </a>
+        <ul class="ts-nav__links site-nav__links">
+          <li class="site-nav__menu-item">
+            <details class="site-nav-menu">
+              <summary>BUILD <span aria-hidden="true">⌄</span></summary>
+              <div class="site-nav-menu__panel">
+                <p class="site-nav-menu__eyebrow">FROM SOURCE FILES TO STATIC OUTPUT</p>
+                <div class="site-nav-menu__grid">
+                  <a href="#workflow"><span class="site-nav-menu__icon">01</span><span><strong>Workflow</strong><small>Content, layouts, and a clean build</small></span><span class="site-nav-menu__arrow" aria-hidden="true">↗</span></a>
+                  <a href="#toolchains"><span class="site-nav-menu__icon">02</span><span><strong>Toolchains</strong><small>Add Sass, utility CSS, or scripts</small></span><span class="site-nav-menu__arrow" aria-hidden="true">↗</span></a>
+                  <a href="#start"><span class="site-nav-menu__icon">03</span><span><strong>First build</strong><small>Start a project and make a page</small></span><span class="site-nav-menu__arrow" aria-hidden="true">↗</span></a>
+                </div>
+              </div>
+            </details>
+          </li>
+          <li class="site-nav__menu-item">
+            <details class="site-nav-menu">
+              <summary>KIT <span aria-hidden="true">⌄</span></summary>
+              <div class="site-nav-menu__panel">
+                <p class="site-nav-menu__eyebrow">A CSS FIRST KIT, READY TO MAKE YOURS</p>
+                <div class="site-nav-menu__grid">
+                  <a href="#kit"><span class="site-nav-menu__icon">01</span><span><strong>Foundations</strong><small>Layout, type, controls, and patterns</small></span><span class="site-nav-menu__arrow" aria-hidden="true">↗</span></a>
+                  <a href="#kit"><span class="site-nav-menu__icon">02</span><span><strong>Theme tokens</strong><small>One vocabulary, your visual direction</small></span><span class="site-nav-menu__arrow" aria-hidden="true">↗</span></a>
+                  <a href="https://github.com/cybercoretech/tessera/tree/main/docs/kit"><span class="site-nav-menu__icon">03</span><span><strong>Kit guides</strong><small>Browse the source and usage notes</small></span><span class="site-nav-menu__arrow" aria-hidden="true">↗</span></a>
+                </div>
+              </div>
+            </details>
+          </li>
+          <li><a href="https://github.com/cybercoretech/tessera">SOURCE <span aria-hidden="true">↗</span></a></li>
+          <li><a class="site-nav__start" href="#start">Get started <span aria-hidden="true">↗</span></a></li>
+        </ul>
+        <cybercore-theme-chooser shuffle compact default="cybercore-tech" match=".site-nav__links a"></cybercore-theme-chooser>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    {{content}}
+  </main>
+  <footer class="site-footer" id="contact">
+    <div class="ts-container site-footer__inner">
+      <cybercore-contact repo="tessera">
+        <a href="mailto:dev@cybercoretech.net">dev@cybercoretech.net</a>
+      </cybercore-contact>
+    </div>
+  </footer>
+  <script>
+    const siteMenus = [...document.querySelectorAll(".site-nav-menu")];
+    const siteMenuTimers = new WeakMap();
+    const clearSiteMenuTimer = menu => {
+      clearTimeout(siteMenuTimers.get(menu));
+      siteMenuTimers.delete(menu);
+    };
+    const closeSiteMenus = except => {
+      for (const menu of siteMenus) {
+        clearSiteMenuTimer(menu);
+        if (menu !== except) menu.open = false;
+      }
+    };
+
+    for (const menu of siteMenus) {
+      menu.addEventListener("pointerenter", event => {
+        if (event.pointerType !== "mouse" || menu.open) return;
+        clearSiteMenuTimer(menu);
+        siteMenuTimers.set(menu, setTimeout(() => {
+          closeSiteMenus(menu);
+          menu.open = true;
+        }, 120));
+      });
+      menu.addEventListener("pointerleave", event => {
+        if (event.pointerType !== "mouse") return;
+        clearSiteMenuTimer(menu);
+        if (!menu.matches(":focus-within")) menu.open = false;
+      });
+      menu.querySelector("summary").addEventListener("click", event => {
+        event.preventDefault();
+        const shouldOpen = !menu.open;
+        closeSiteMenus();
+        menu.open = shouldOpen;
+      });
+      menu.addEventListener("focusout", () => {
+        requestAnimationFrame(() => {
+          if (!menu.matches(":focus-within") && !menu.matches(":hover")) {
+            clearSiteMenuTimer(menu);
+            menu.open = false;
+          }
+        });
+      });
+    }
+    document.addEventListener("pointerdown", event => {
+      if (!(event.target instanceof Element) || !event.target.closest(".site-nav-menu")) closeSiteMenus();
+    });
+    document.querySelectorAll(".site-nav-menu__panel a").forEach(link => {
+      link.addEventListener("click", () => closeSiteMenus());
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Escape") return;
+      const menu = siteMenus.find(item => item.open);
+      if (menu) {
+        closeSiteMenus();
+        menu.querySelector("summary").focus();
+      }
+    });
+  </script>
+</body>
+</html>

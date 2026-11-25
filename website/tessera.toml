@@ -1,0 +1,22 @@
+name = "tessera-project-site"
+version = "0.1.0"
+
+[style]
+source = "css"
+
+[theme.tokens]
+primary = "#456a83"
+secondary = "#b8c9d2"
+color_bg = "#0b141c"
+color_text = "#d9e3e8"
+color_heading = "#edf2f5"
+color_muted = "#a3b2bb"
+color_card = "#172630"
+border_color = "#344651"
+color_code_bg = "#1b2b35"
+color_code_block = "#0d1820"
+color_focus = "#b8c9d2"
+font_main = "'Trebuchet MS', 'Gill Sans', sans-serif"
+font_display = "'Iowan Old Style', 'Palatino Linotype', Georgia, serif"
+container_max = "78rem"
+grid_gap = "1.25rem"
