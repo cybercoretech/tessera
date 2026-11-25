@@ -1,0 +1,573 @@
+/* Tessera Kit foundations: semantic defaults, readable type, and accessible states. */
+:root {
+  color-scheme: light;
+  --ts-focus-ring: var(--ts-color-focus, #155b4c);
+  --ts-page-gutter: clamp(1rem, 4vw, 2rem);
+}
+
+html {
+  scroll-padding-top: 1.5rem;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--ts-font-main, "Trebuchet MS", "Gill Sans", sans-serif);
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  color: var(--ts-color-bg, #fff);
+  background: var(--ts-primary, #155b4c);
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--ts-focus-ring);
+  outline-offset: 3px;
+}
+
+:where(button, input, select, textarea) {
+  font: inherit;
+}
+
+:where(button, a.ts-button) {
+  min-height: 2.75rem;
+}
+
+:where(img, svg, video, canvas) {
+  max-width: 100%;
+}
+
+:where(img, video) {
+  height: auto;
+}
+
+:where(table) {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+:where(th, td) {
+  padding: 0.65rem 0.8rem;
+  text-align: start;
+  border-bottom: 1px solid var(--ts-border-color, #d9ded7);
+}
+
+:where(th) {
+  color: var(--ts-color-heading, #20312c);
+  font-weight: 700;
+}
+
+:where(h1, h2, h3, h4) {
+  text-wrap: balance;
+}
+
+h1 {
+  font-family: var(--ts-font-display, Georgia, "Times New Roman", serif);
+  font-size: clamp(2.5rem, 7vw, 5.75rem);
+  letter-spacing: -0.045em;
+}
+
+:where(p, li) {
+  text-wrap: pretty;
+}
+
+.ts-prose {
+  max-width: 68ch;
+}
+
+.ts-prose > :first-child {
+  margin-top: 0;
+}
+
+.ts-prose > :last-child {
+  margin-bottom: 0;
+}
+
+.ts-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ts-color-bg: #14211e;
+  --ts-color-text: #e5ece8;
+  --ts-color-heading: #f5f7f4;
+  --ts-color-muted: #b2c2ba;
+  --ts-color-card: #1c2d28;
+  --ts-border-color: #40544c;
+  --ts-color-code-bg: #283a34;
+  --ts-color-code-block: #101a17;
+  --ts-color-alert-bg: #213c35;
+  --ts-color-alert-text: #c8e9dc;
+  --ts-color-focus: #a5e4ca;
+  --ts-color-error: #ffb4ab;
+  --ts-color-error-text: #ffd9d5;
+  --ts-color-error-surface: #492426;
+  --ts-color-success: #8ed5a3;
+  --ts-color-success-text: #c5ebcd;
+  --ts-color-success-surface: #1d3928;
+  --ts-color-warning: #f2c36b;
+  --ts-color-warning-text: #f8dfad;
+  --ts-color-warning-surface: #443819;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ts-color-bg: #14211e;
+    --ts-color-text: #e5ece8;
+    --ts-color-heading: #f5f7f4;
+    --ts-color-muted: #b2c2ba;
+    --ts-color-card: #1c2d28;
+    --ts-border-color: #40544c;
+    --ts-color-code-bg: #283a34;
+    --ts-color-code-block: #101a17;
+    --ts-color-alert-bg: #213c35;
+    --ts-color-alert-text: #c8e9dc;
+    --ts-color-focus: #a5e4ca;
+    --ts-color-error: #ffb4ab;
+    --ts-color-error-text: #ffd9d5;
+    --ts-color-error-surface: #492426;
+    --ts-color-success: #8ed5a3;
+    --ts-color-success-text: #c5ebcd;
+    --ts-color-success-surface: #1d3928;
+    --ts-color-warning: #f2c36b;
+    --ts-color-warning-text: #f8dfad;
+    --ts-color-warning-surface: #443819;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tessera layout primitives use intrinsic sizing and wrap before overflowing. */
+.ts-container {
+  width: calc(100% - var(--ts-page-gutter) - var(--ts-page-gutter));
+  max-width: var(--ts-container-max, 76rem);
+  padding-inline: 0;
+  container: ts-page / inline-size;
+}
+
+.ts-section {
+  padding-block: clamp(2.5rem, 7vw, 6rem);
+}
+
+.ts-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: var(--ts-grid-gap, 1.5rem);
+}
+
+.ts-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ts-stack-gap, 1rem);
+}
+
+.ts-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ts-cluster-gap, 0.75rem);
+}
+
+.ts-sidebar-layout {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.85fr) minmax(0, 2fr);
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+@container ts-page (max-width: 52rem) {
+  .ts-sidebar-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Native controls keep their semantics; Kit classes provide consistent styling. */
+.ts-button--secondary {
+  color: var(--ts-color-secondary-contrast, #172b25);
+}
+
+.ts-button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.ts-label {
+  color: var(--ts-color-heading, #20312c);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.ts-field {
+  display: grid;
+  align-items: start;
+  gap: 0.45rem;
+}
+
+.ts-input,
+.ts-select,
+.ts-textarea {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--ts-border-color, #d9ded7);
+  border-radius: 0.4rem;
+  color: var(--ts-color-text, #263a34);
+  background: var(--ts-color-bg, #fffefa);
+}
+
+.ts-select {
+  cursor: pointer;
+}
+
+.ts-textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.ts-input::placeholder,
+.ts-textarea::placeholder {
+  color: var(--ts-color-muted, #52645d);
+  opacity: 0.8;
+}
+
+.ts-input[aria-invalid="true"],
+.ts-select[aria-invalid="true"],
+.ts-textarea[aria-invalid="true"] {
+  border-color: var(--ts-color-error, #9b2525);
+}
+
+.ts-input:disabled,
+.ts-select:disabled,
+.ts-textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.ts-choice-group {
+  display: grid;
+  min-width: 0;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ts-choice-group legend {
+  margin-bottom: 0.55rem;
+  color: var(--ts-color-heading, #20312c);
+  font-weight: 700;
+}
+
+.ts-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  color: var(--ts-color-text, #263a34);
+  cursor: pointer;
+}
+
+.ts-choice > input {
+  width: 1.1rem;
+  height: 1.1rem;
+  min-height: 1.1rem;
+  flex: 0 0 auto;
+  margin: 0.2rem 0 0;
+  accent-color: var(--ts-primary, #155b4c);
+}
+
+.ts-choice > input:disabled {
+  cursor: not-allowed;
+}
+
+.ts-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--ts-color-text, #263a34);
+  cursor: pointer;
+}
+
+.ts-switch input[type="checkbox"][role="switch"] {
+  appearance: none;
+  display: grid;
+  width: 3rem;
+  height: 1.75rem;
+  min-height: 1.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 0.15rem;
+  border: 1px solid var(--ts-border-color, #aebbb3);
+  border-radius: 999px;
+  background: var(--ts-color-code-bg, #e9eee8);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.ts-switch input[type="checkbox"][role="switch"]::before {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--ts-color-card, #fffefa);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+  content: "";
+  transition: transform 0.15s ease;
+}
+
+.ts-switch input[type="checkbox"][role="switch"]:checked {
+  border-color: var(--ts-primary, #155b4c);
+  background: var(--ts-primary, #155b4c);
+}
+
+.ts-switch input[type="checkbox"][role="switch"]:checked::before {
+  transform: translateX(1.25rem);
+}
+
+.ts-switch input[type="checkbox"][role="switch"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+@media (forced-colors: active) {
+  .ts-switch input[type="checkbox"][role="switch"] {
+    appearance: auto;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .ts-switch input[type="checkbox"][role="switch"]::before {
+    content: none;
+  }
+}
+
+.ts-help {
+  margin: 0;
+  color: var(--ts-color-muted, #52645d);
+  font-size: 0.8rem;
+}
+
+.ts-error {
+  margin: 0;
+  color: var(--ts-color-error, #9b2525);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Content patterns stay grounded in native navigation and table semantics. */
+.ts-breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.ts-breadcrumbs__list > li + li::before {
+  margin-inline-end: 0.45rem;
+  color: var(--ts-color-muted, #52645d);
+  content: "/";
+}
+
+.ts-breadcrumbs [aria-current="page"] {
+  color: var(--ts-color-heading, #20312c);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ts-avatar {
+  display: inline-grid;
+  width: 2.75rem;
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  color: var(--ts-color-avatar-text, #fff);
+  background: var(--ts-color-avatar, var(--ts-primary, #155b4c));
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+img.ts-avatar {
+  object-fit: cover;
+}
+
+.ts-media {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+
+.ts-media__visual {
+  margin: 0;
+}
+
+.ts-media__body {
+  min-width: 0;
+}
+
+.ts-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border: 1px solid var(--ts-border-color, #d9ded7);
+  border-radius: 0.65rem;
+  background: var(--ts-color-card, #fff);
+}
+
+.ts-table {
+  width: 100%;
+  min-width: 38rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.ts-table caption {
+  padding: 1rem;
+  color: var(--ts-color-heading, #20312c);
+  font-weight: 700;
+  text-align: start;
+}
+
+.ts-table th,
+.ts-table td {
+  padding: 0.75rem 1rem;
+  text-align: start;
+  vertical-align: middle;
+  border: 0;
+  border-top: 1px solid var(--ts-border-color, #d9ded7);
+}
+
+.ts-table thead th {
+  color: var(--ts-color-heading, #20312c);
+  background: var(--ts-color-code-bg, #f3f4f6);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ts-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--ts-color-bg, #fff) 78%, var(--ts-color-code-bg, #f3f4f6));
+}
+
+.ts-pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ts-pagination a {
+  display: inline-grid;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  place-items: center;
+  padding-inline: 0.65rem;
+  border: 1px solid var(--ts-border-color, #d9ded7);
+  border-radius: 0.4rem;
+  color: var(--ts-color-text, #263a34);
+  text-decoration: none;
+}
+
+.ts-pagination a:hover {
+  background: var(--ts-color-code-bg, #f3f4f6);
+}
+
+.ts-pagination a[aria-current="page"] {
+  border-color: var(--ts-primary, #155b4c);
+  color: #fff;
+  background: var(--ts-primary, #155b4c);
+  font-weight: 700;
+}
+
+/* Native details/summary provide disclosure behavior without JavaScript. */
+.ts-accordion {
+  border-top: 1px solid var(--ts-border-color, #d9ded7);
+}
+
+.ts-accordion__item {
+  border-bottom: 1px solid var(--ts-border-color, #d9ded7);
+}
+
+.ts-accordion__trigger {
+  padding-block: 1.1rem;
+  color: var(--ts-color-heading, #20312c);
+  cursor: pointer;
+  font-weight: 700;
+  list-style-position: outside;
+}
+
+.ts-accordion__item[open] > .ts-accordion__trigger {
+  color: var(--ts-primary, #155b4c);
+}
+
+.ts-accordion__panel {
+  max-width: 68ch;
+  padding: 0 0 1.2rem;
+  color: var(--ts-color-muted, #52645d);
+}
+
+.ts-accordion__panel > :last-child {
+  margin-bottom: 0;
+}
+
+/* Feedback tones are explicit states on the one canonical alert pattern. */
+.ts-alert[data-tone="success"] {
+  border-left-color: var(--ts-color-success, #245b37);
+  color: var(--ts-color-success-text, #214b30);
+  background: var(--ts-color-success-surface, #e8f3eb);
+}
+
+.ts-alert[data-tone="warning"] {
+  border-left-color: var(--ts-color-warning, #7a4b00);
+  color: var(--ts-color-warning-text, #583900);
+  background: var(--ts-color-warning-surface, #fff2d5);
+}
+
+.ts-alert[data-tone="error"] {
+  border-left-color: var(--ts-color-error, #9b2525);
+  color: var(--ts-color-error-text, #762020);
+  background: var(--ts-color-error-surface, #fbe9e8);
+}

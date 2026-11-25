@@ -38,3 +38,70 @@ impl<'a> Theme<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{catalog, STYLES};
+
+    #[test]
+    fn core_styles_match_snapshot() {
+        assert_eq!(STYLES, include_str!("kit.css.snap"));
+    }
+
+    #[test]
+    fn kit_class_names_use_the_ts_prefix() {
+        for entry in catalog::ENTRIES {
+            assert!(
+                entry.class_name.starts_with("ts-"),
+                "catalog class `{}` must start with `ts-`",
+                entry.class_name
+            );
+        }
+
+        let mut selectors = Vec::new();
+        let mut prelude = String::new();
+        for character in STYLES.chars() {
+            match character {
+                '{' => {
+                    let selector = prelude.trim();
+                    if !selector.starts_with('@') {
+                        let bytes = selector.as_bytes();
+                        let mut index = 0;
+                        while index < bytes.len() {
+                            if bytes[index] == b'.' {
+                                let start = index + 1;
+                                let mut end = start;
+                                while end < bytes.len()
+                                    && (bytes[end].is_ascii_alphanumeric()
+                                        || matches!(bytes[end], b'-' | b'_'))
+                                {
+                                    end += 1;
+                                }
+                                if end > start {
+                                    selectors.push(selector[start..end].to_owned());
+                                }
+                                index = end;
+                            } else {
+                                index += 1;
+                            }
+                        }
+                    }
+                    prelude.clear();
+                }
+                '}' => prelude.clear(),
+                _ => prelude.push(character),
+            }
+        }
+
+        assert!(
+            !selectors.is_empty(),
+            "Kit CSS should contain class selectors"
+        );
+        for class_name in selectors {
+            assert!(
+                class_name.starts_with("ts-"),
+                "Kit CSS class selector `.{class_name}` must start with `.ts-`"
+            );
+        }
+    }
+}
