@@ -134,7 +134,7 @@ layout: base
 <p>New layouts and a quieter palette. <code>tessera build</code> to try it.</p>
 <p class="site-play__buttons"><a class="ts-button" href="#tokens" tabindex="-1">Read the log</a> <a class="ts-button ts-button--secondary" href="#tokens" tabindex="-1">Changelog</a></p>
 </article>
-<div class="ts-alert" role="note">Tokens changed. Components did not.</div>
+<div class="ts-alert" role="note"><span>Tokens changed. Components did not.</span></div>
 </div>
 </div>
 <p class="site-play__contrast" data-play-contrast aria-live="polite">Button text contrast: 5.7:1</p>
@@ -245,8 +245,98 @@ layout: base
 </dialog>
 </section>
 
+<section class="site-file" id="commands" aria-labelledby="commands-title">
+<div class="site-tab"><span class="site-tab__file"><span class="site-ico site-ico--bin" aria-hidden="true">$</span>bin/tessera</span><span class="site-tab__kicker">// 05 · commands</span></div>
+<div class="site-head">
+<h2 id="commands-title" data-scramble>Eight commands. <em>No hidden steps.</em></h2>
+<p>Everything Tessera does starts from one of these. Open a command to see its arguments and the output it prints, recorded from <code>tessera 0.1.0</code> in a fresh project.</p>
+</div>
+<ul class="site-cmds">
+<li><a class="site-cmd" href="https://github.com/cybercoretech/tessera#-cli-reference" data-cmd="new"><span class="site-cmd__name">new</span><span class="site-cmd__args">&lt;NAME&gt;</span><span class="site-cmd__desc">Create a project with content, layouts, styles and tessera.toml.</span><span class="site-cmd__status" data-status="shipped">shipped</span></a></li>
+<li><a class="site-cmd" href="https://github.com/cybercoretech/tessera#-cli-reference" data-cmd="add-page"><span class="site-cmd__name">add-page</span><span class="site-cmd__args">&lt;NAME&gt;</span><span class="site-cmd__desc">Add a Markdown page with front matter under content/.</span><span class="site-cmd__status" data-status="shipped">shipped</span></a></li>
+<li><a class="site-cmd" href="https://github.com/cybercoretech/tessera#-cli-reference" data-cmd="theme-set"><span class="site-cmd__name">theme-set</span><span class="site-cmd__args">&lt;KEY&gt; &lt;VALUE&gt;</span><span class="site-cmd__desc">Set or update one design token in tessera.toml.</span><span class="site-cmd__status" data-status="shipped">shipped</span></a></li>
+<li><a class="site-cmd" href="https://github.com/cybercoretech/tessera#-cli-reference" data-cmd="dev"><span class="site-cmd__name">dev</span><span class="site-cmd__args">[-p PORT]</span><span class="site-cmd__desc">Serve dist/ and rebuild when your source files change.</span><span class="site-cmd__status" data-status="shipped">shipped</span></a></li>
+<li><a class="site-cmd" href="https://github.com/cybercoretech/tessera#-cli-reference" data-cmd="doctor"><span class="site-cmd__name">doctor</span><span class="site-cmd__args"></span><span class="site-cmd__desc">Check config, content, the Kit and any external tools you selected.</span><span class="site-cmd__status" data-status="shipped">shipped</span></a></li>
+<li><a class="site-cmd" href="https://github.com/cybercoretech/tessera#-cli-reference" data-cmd="build"><span class="site-cmd__name">build</span><span class="site-cmd__args"></span><span class="site-cmd__desc">Render pages, styles and public/ assets into dist/.</span><span class="site-cmd__status" data-status="shipped">shipped</span></a></li>
+<li><a class="site-cmd" href="https://github.com/cybercoretech/tessera#-cli-reference" data-cmd="clean"><span class="site-cmd__name">clean</span><span class="site-cmd__args"></span><span class="site-cmd__desc">Remove the generated dist/ directory.</span><span class="site-cmd__status" data-status="shipped">shipped</span></a></li>
+<li><a class="site-cmd" href="https://github.com/cybercoretech/tessera#-cli-reference" data-cmd="add-component"><span class="site-cmd__name">add-component</span><span class="site-cmd__args">&lt;NAME&gt;</span><span class="site-cmd__desc">Write a component placeholder under src/components/.</span><span class="site-cmd__status" data-status="early">early</span></a></li>
+<li><a class="site-cmd site-cmd--planned" href="https://github.com/cybercoretech/tessera/blob/main/docs/superpowers/plans/2026-11-21-tessera-implementation.md" data-cmd="bridge"><span class="site-cmd__name">bridge</span><span class="site-cmd__args">novastack --project &lt;PATH&gt;</span><span class="site-cmd__desc">Optional bridge into a NovaStack app. Not in 0.1.0.</span><span class="site-cmd__status" data-status="planned">planned</span></a></li>
+</ul>
+<template data-cmd-detail="new"><p class="site-sheet__purpose">Create a new Tessera project directory with scaffolding.</p><div class="site-pane"><div class="site-pane__bar"><span>usage</span><span>tessera 0.1.0</span></div><pre class="site-pane__code">tessera new &lt;NAME&gt;</pre></div><p>Creates <code>content/index.md</code>, <code>layouts/base.html</code>, <code>templates/page.md</code> (used by <code>add-page</code>), empty <code>styles/</code> and <code>public/</code> folders, an example <code>scripts/main.ts</code> (scripts stay disabled), and a <code>tessera.toml</code> with CSS as the style source and every external toolchain off.</p><div class="site-term"><div class="site-term__bar"><i></i><i></i><i></i><span>recording</span></div><pre class="site-term__body"><span class="site-tl"><b class="site-p">❯</b> tessera new my-site</span>
+<span class="site-tl">Created new Tessera project in directory 'my-site'.</span></pre></div></template>
+<template data-cmd-detail="add-page"><p class="site-sheet__purpose">Add a new Markdown page under <code>content/</code>.</p><div class="site-pane"><div class="site-pane__bar"><span>usage</span><span>tessera 0.1.0</span></div><pre class="site-pane__code">tessera add-page &lt;NAME&gt;</pre></div><p>The page starts with front matter (<code>title</code>, <code>description</code>, <code>layout</code>) and builds to <code>dist/&lt;NAME&gt;.html</code>.</p><div class="site-term"><div class="site-term__bar"><i></i><i></i><i></i><span>recording</span></div><pre class="site-term__body"><span class="site-tl"><b class="site-p">❯</b> tessera add-page about</span>
+<span class="site-tl">Created page 'about.md' in content/</span></pre></div></template>
+<template data-cmd-detail="theme-set"><p class="site-sheet__purpose">Set or update a design token in <code>tessera.toml</code>.</p><div class="site-pane"><div class="site-pane__bar"><span>usage</span><span>tessera 0.1.0</span></div><pre class="site-pane__code">tessera theme-set &lt;KEY&gt; &lt;VALUE&gt;</pre></div><p>Writes the key under <code>[theme.tokens]</code>. On the next build it becomes a <code>--ts-*</code> custom property; underscores in the key become hyphens. Try values in the <a href="#tokens">token playground</a> first.</p><div class="site-term"><div class="site-term__bar"><i></i><i></i><i></i><span>recording</span></div><pre class="site-term__body"><span class="site-tl"><b class="site-p">❯</b> tessera theme-set primary "#7c3aed"</span>
+<span class="site-tl">Set token 'primary = #7c3aed' in tessera.toml</span></pre></div></template>
+<template data-cmd-detail="dev"><p class="site-sheet__purpose">Run the local development server and rebuild when files change.</p><div class="site-pane"><div class="site-pane__bar"><span>usage</span><span>tessera 0.1.0</span></div><pre class="site-pane__code">tessera dev [OPTIONS]
+  -p, --port &lt;PORT&gt;  Port to listen on [default: 8000]</pre></div><p>Serves <code>dist/</code> and watches <code>content/</code>, <code>layouts/</code>, <code>templates/</code>, <code>styles/</code>, <code>scripts/</code>, <code>public/</code> and <code>tessera.toml</code>. Each change triggers a rebuild; refresh the browser to see it, since the page does not reload itself yet.</p><div class="ts-alert" data-tone="warning" role="note"><span>The server listens on <code>0.0.0.0</code>, so other devices on your network can reach it while it runs.</span></div><div class="site-term"><div class="site-term__bar"><i></i><i></i><i></i><span>example</span></div><pre class="site-term__body"><span class="site-tl"><b class="site-p">❯</b> tessera dev</span>
+<span class="site-tl">[dev] Server listening on http://localhost:8000</span>
+<span class="site-tl">[dev] Rebuilt 2 page(s)</span></pre></div></template>
+<template data-cmd-detail="doctor"><p class="site-sheet__purpose">Run diagnostic health checks on the current project.</p><div class="site-pane"><div class="site-pane__bar"><span>usage</span><span>tessera 0.1.0</span></div><pre class="site-pane__code">tessera doctor</pre></div><p>Parses <code>tessera.toml</code>, counts tokens and pages, loads the Kit catalogue, and runs <code>--version</code> on every external tool your config selects (for example <code>tailwindcss</code> or <code>esbuild</code>). The default CSS project needs none.</p><div class="site-term"><div class="site-term__bar"><i></i><i></i><i></i><span>recording</span></div><pre class="site-term__body"><span class="site-tl"><b class="site-p">❯</b> tessera doctor</span>
+<span class="site-tl"><b class="site-ok">[doctor] ✓</b> tessera.toml parsed successfully</span>
+<span class="site-tl">[doctor]   Tokens defined: 3</span>
+<span class="site-tl"><b class="site-ok">[doctor] ✓</b> content/ exists with 2 markdown file(s)</span>
+<span class="site-tl"><b class="site-ok">[doctor] ✓</b> Site engine instantiated</span>
+<span class="site-tl"><b class="site-ok">[doctor] ✓</b> Kit catalog loaded with 32 patterns</span></pre></div></template>
+<template data-cmd-detail="build"><p class="site-sheet__purpose">Build the static site into <code>dist/</code>.</p><div class="site-pane"><div class="site-pane__bar"><span>usage</span><span>tessera 0.1.0</span></div><pre class="site-pane__code">tessera build</pre></div><p>Renders every page through its layout, compiles tokens, Kit and your styles into <code>styles.css</code>, runs any toolchains you selected, and copies <code>public/</code>. Output is staged first, so <code>dist/</code> is only replaced when the whole build succeeds.</p><div class="site-term"><div class="site-term__bar"><i></i><i></i><i></i><span>recording</span></div><pre class="site-term__body"><span class="site-tl"><b class="site-p">❯</b> tessera build</span>
+<span class="site-tl">Primary color from Kit: #7c3aed</span>
+<span class="site-tl"><b class="site-ok">✓</b> Built 2 page(s) into dist/</span>
+<span class="site-tl site-dim">Defined design tokens:</span>
+<span class="site-tl">  primary = #7c3aed</span>
+<span class="site-tl">  font-main = system-ui, sans-serif</span>
+<span class="site-tl">  secondary = #ff6600</span></pre></div></template>
+<template data-cmd-detail="clean"><p class="site-sheet__purpose">Clean the generated <code>dist/</code> directory.</p><div class="site-pane"><div class="site-pane__bar"><span>usage</span><span>tessera 0.1.0</span></div><pre class="site-pane__code">tessera clean</pre></div><p>Deletes <code>dist/</code> only. Your source files are never touched.</p><div class="site-term"><div class="site-term__bar"><i></i><i></i><i></i><span>recording</span></div><pre class="site-term__body"><span class="site-tl"><b class="site-p">❯</b> tessera clean</span>
+<span class="site-tl">Removed dist/ directory</span></pre></div></template>
+<template data-cmd-detail="add-component"><p class="site-sheet__purpose">Add a component stub under <code>src/components/</code>.</p><div class="site-pane"><div class="site-pane__bar"><span>usage</span><span>tessera 0.1.0</span></div><pre class="site-pane__code">tessera add-component &lt;NAME&gt;</pre></div><div class="ts-alert" data-tone="warning" role="note"><span>Early: this writes a Rust placeholder file (<code>&lt;NAME&gt;.rs</code>) that the build does not use yet. Page, section and component generators are planned.</span></div><div class="site-term"><div class="site-term__bar"><i></i><i></i><i></i><span>recording</span></div><pre class="site-term__body"><span class="site-tl"><b class="site-p">❯</b> tessera add-component hero</span>
+<span class="site-tl">Created component file 'hero.rs' in src/components/</span></pre></div></template>
+<template data-cmd-detail="bridge"><p class="site-sheet__purpose">Planned: an optional bridge into a NovaStack project.</p><div class="site-pane"><div class="site-pane__bar"><span>planned usage</span><span>not in 0.1.0</span></div><pre class="site-pane__code">tessera bridge novastack --project &lt;PATH&gt;</pre></div><div class="ts-alert" role="note"><span>This command does not exist yet. The plan: add Tessera's Kit and tokens to a NovaStack HTMX/Askama app through its declared anchors, check its manifest and version, and never guess where to edit.</span></div></template>
+<dialog class="site-sheet" data-cmd-sheet aria-labelledby="cmd-sheet-title">
+<div class="site-sheet__bar"><span class="site-sheet__file" id="cmd-sheet-title">bin/tessera</span><form method="dialog"><button class="site-sheet__close" type="submit" aria-label="Close">✕</button></form></div>
+<div class="site-sheet__body" data-cmd-body></div>
+</dialog>
+</section>
+
+<section class="site-file" id="toolchains" aria-labelledby="toolchains-title">
+<div class="site-tab"><span class="site-tab__file"><span class="site-ico site-ico--dir" aria-hidden="true">▸</span>styles/</span><span class="site-tab__kicker">// 06 · toolchains</span></div>
+<div class="site-head">
+<h2 id="toolchains-title" data-scramble>Plain CSS by default. <em>Tools when you ask.</em></h2>
+<p>A new project builds with nothing but Tessera. Each external tool is one line in <code>tessera.toml</code>, uses the copy already installed on your machine, and is checked by <code>tessera doctor</code>. Tessera never downloads or installs tools for you.</p>
+</div>
+<div class="ts-table-wrap site-matrix" role="region" aria-labelledby="matrix-caption" tabindex="0">
+<table class="ts-table">
+<caption id="matrix-caption">Style and script toolchains in tessera 0.1.0</caption>
+<thead><tr><th scope="col">Tool</th><th scope="col">Job</th><th scope="col">Turn it on</th><th scope="col">Runs</th><th scope="col">Node.js</th><th scope="col">Status</th></tr></thead>
+<tbody>
+<tr><th scope="row">Plain CSS</th><td data-label="Job">your styles</td><td data-label="Turn it on"><code>source = "css"</code></td><td data-label="Runs">in Tessera</td><td data-label="Node.js"><span class="site-no">no</span></td><td data-label="Status"><span class="site-pill site-pill--on">default</span></td></tr>
+<tr><th scope="row">Grass</th><td data-label="Job">SCSS</td><td data-label="Turn it on"><code>source = "scss"</code></td><td data-label="Runs">in Tessera</td><td data-label="Node.js"><span class="site-no">no</span></td><td data-label="Status"><span class="site-pill site-pill--on">default for scss</span></td></tr>
+<tr><th scope="row">Dart Sass</th><td data-label="Job">SCSS</td><td data-label="Turn it on"><code>sass_compiler = "dart-sass"</code></td><td data-label="Runs"><code>sass</code> on PATH</td><td data-label="Node.js"><span class="site-no">no</span>¹</td><td data-label="Status"><span class="site-pill">opt-in</span></td></tr>
+<tr><th scope="row">Tailwind v4</th><td data-label="Job">utility CSS</td><td data-label="Turn it on"><code>utility = "tailwind"</code></td><td data-label="Runs"><code>tailwindcss</code> v4</td><td data-label="Node.js"><span class="site-no">no</span>¹</td><td data-label="Status"><span class="site-pill">opt-in · pick one</span></td></tr>
+<tr><th scope="row">UnoCSS</th><td data-label="Job">utility CSS</td><td data-label="Turn it on"><code>utility = "uno-css"</code> + preset or <code>uno.config.*</code></td><td data-label="Runs"><code>unocss</code> CLI</td><td data-label="Node.js"><span class="site-yes">yes</span></td><td data-label="Status"><span class="site-pill">opt-in · pick one</span></td></tr>
+<tr><th scope="row">esbuild</th><td data-label="Job">bundle JS / TS</td><td data-label="Turn it on"><code>[scripts] enabled = true</code></td><td data-label="Runs"><code>esbuild</code></td><td data-label="Node.js"><span class="site-no">no</span>¹</td><td data-label="Status"><span class="site-pill">opt-in</span></td></tr>
+<tr><th scope="row">tsc</th><td data-label="Job">type check</td><td data-label="Turn it on"><code>typecheck = true</code></td><td data-label="Runs"><code>tsc --noEmit</code></td><td data-label="Node.js"><span class="site-yes">yes</span></td><td data-label="Status"><span class="site-pill">opt-in</span></td></tr>
+<tr><th scope="row">Interactions</th><td data-label="Job">Tessera's optional plain JS</td><td data-label="Turn it on"><code>interactions = true</code></td><td data-label="Runs">ships with Tessera</td><td data-label="Node.js"><span class="site-no">no</span></td><td data-label="Status"><span class="site-pill">opt-in</span></td></tr>
+</tbody>
+</table>
+</div>
+<div class="site-matrix__notes">
+<p>¹ Available as a standalone binary; also installable through npm if you prefer.</p>
+<p>Tailwind and UnoCSS are mutually exclusive, and neither replaces or translates <code>ts-*</code> classes. Tailwind receives your tokens as theme variables (<code>--color-primary: var(--ts-primary)</code>). Full options are in the <a href="https://github.com/cybercoretech/tessera#-styles-utility-adapters-and-scripts" target="_blank" rel="noopener">README<span class="site-sr"> (opens in a new tab)</span></a>.</p>
+</div>
+<div class="site-pane site-matrix__defaults">
+<div class="site-pane__bar"><span>tessera.toml · new project</span><span>defaults</span></div>
+<pre class="site-pane__code"><span class="site-c">[style]</span>
+<span class="site-k">source</span> = <span class="site-s">"css"</span>            <span class="site-c"># css or scss</span>
+<span class="site-k">sass_compiler</span> = <span class="site-s">"grass"</span>   <span class="site-c"># grass or dart-sass</span>
+<span class="site-c">[scripts]</span>
+<span class="site-k">enabled</span> = <span class="site-s">false</span>
+<span class="site-k">entry_points</span> = [<span class="site-s">"scripts/main.ts"</span>]
+<span class="site-k">typecheck</span> = <span class="site-s">false</span>
+<span class="site-k">interactions</span> = <span class="site-s">false</span></pre>
+</div>
+</section>
+
 <section class="site-file" id="start" aria-labelledby="start-title">
-<div class="site-tab"><span class="site-tab__file"><span class="site-ico site-ico--dir" aria-hidden="true">▸</span>dist/</span><span class="site-tab__kicker">// 05 · get started</span></div>
+<div class="site-tab"><span class="site-tab__file"><span class="site-ico site-ico--dir" aria-hidden="true">▸</span>dist/</span><span class="site-tab__kicker">// 07 · get started</span></div>
 <div class="site-start">
 <div class="site-head">
 <h2 id="start-title" data-scramble>Four commands. <em>One folder to ship.</em></h2>
@@ -270,7 +360,7 @@ layout: base
 </section>
 
 <section class="site-file" id="faq" aria-labelledby="faq-title">
-<div class="site-tab"><span class="site-tab__file"><span class="site-ico site-ico--md" aria-hidden="true">M↓</span>FAQ.md</span><span class="site-tab__kicker">// 06 · questions</span></div>
+<div class="site-tab"><span class="site-tab__file"><span class="site-ico site-ico--md" aria-hidden="true">M↓</span>FAQ.md</span><span class="site-tab__kicker">// 08 · questions</span></div>
 <div class="site-head">
 <h2 id="faq-title" data-scramble>Good to know.</h2>
 </div>
