@@ -125,8 +125,13 @@ tessera dev
 
 # Or with a custom port
 tessera dev --port 3000
+
+# Let other devices on your network (a phone, say) reach it
+tessera dev --host 0.0.0.0
 ```
-Open [http://localhost:8000](http://localhost:8000). Any changes to `content/`, `layouts/`, `styles/`, or `tessera.toml` will instantly trigger a rebuild!
+Run it from your project folder and open [http://localhost:8000](http://localhost:8000). Changes to `content/`, `layouts/`, `templates/`, `styles/`, `scripts/`, `public/`, or `tessera.toml` trigger a rebuild, and open pages reload themselves once it succeeds. The reload script is added only to pages served by `tessera dev`; it is never written into `dist/`.
+
+By default the server listens on `127.0.0.1`, so only your own machine can reach it. It serves files from `dist/` only, with the right `Content-Type` for each file.
 
 ### 7. Clean Build Artifacts
 ```bash
@@ -143,7 +148,7 @@ tessera clean
 | `add-page` | `<name>` | 📄 Creates a new markdown page stub in `content/<name>.md` |
 | `add-component`| `<name>` | 🧩 Generates a component placeholder in `src/components/<name>.rs` |
 | `theme-set` | `<key> <value>` | 🎨 Sets or updates a token under `[theme.tokens]` in `tessera.toml` |
-| `dev` | `-p, --port <PORT>` | 🔄 Starts the live development server with file watching |
+| `dev` | `-p, --port <PORT>`, `--host <ADDR>` | 🔄 Starts the development server with file watching and live reload (`127.0.0.1` by default) |
 | `doctor` | — | 🩺 Runs diagnostic checks on tokens, content, and the engine |
 | `build` | — | 🔨 Compiles markdown sources, layouts, and styles into `dist/` |
 | `clean` | — | 🧹 Deletes the generated `dist/` directory |
