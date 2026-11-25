@@ -278,3 +278,57 @@ const contrast = (a, b) => {
     sheet.addEventListener("close", () => { current?.removeAttribute("aria-current"); current?.focus(); current = null; });
   }
 }
+
+// ---------------------------------------------------------------- command sheets
+// Each card links to the README without JS; with JS it opens its <template>.
+{
+  const sheet = $("[data-cmd-sheet]");
+  if (sheet && typeof sheet.showModal === "function") {
+    const title = $("#cmd-sheet-title");
+    const body = $("[data-cmd-body]", sheet);
+    let current = null;
+    $$("[data-cmd]").forEach((card) => card.addEventListener("click", (e) => {
+      const tpl = document.querySelector(`template[data-cmd-detail="${card.dataset.cmd}"]`);
+      if (!tpl) return;
+      e.preventDefault();
+      title.textContent = `bin/tessera ${card.dataset.cmd}`;
+      body.replaceChildren(tpl.content.cloneNode(true));
+      current = card;
+      sheet.showModal();
+      sheet.querySelector(".site-sheet__close").focus();
+    }));
+    body.addEventListener("click", (e) => { if (e.target.closest('a[href^="#"]')) sheet.close(); });
+    sheet.addEventListener("click", (e) => {
+      if (e.target === sheet && e.clientX < sheet.getBoundingClientRect().left) sheet.close();
+    });
+    sheet.addEventListener("close", () => { current?.focus(); current = null; });
+  }
+}
+
+// ---------------------------------------------------------------- build line
+// dist/build.json is written by tools/stamp-build.py after `tessera build`.
+{
+  const out = $("[data-build-stats]");
+  if (out) {
+    fetch("/build.json", { cache: "no-cache" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((b) => {
+        const kb = (b.bytes / 1024).toFixed(0);
+        const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+        const clean = /^[0-9a-f]{7,40}$/.test(b.commit);
+        const commit = clean
+          ? `<a href="https://github.com/cybercoretech/tessera/commit/${b.commit}" target="_blank" rel="noopener">${b.commit}<span class="site-sr"> (opens in a new tab)</span></a>`
+          : escapeHtml(String(b.commit));
+        out.innerHTML = [
+          `<b>v${escapeHtml(String(b.tessera))}</b>`,
+          `dist/ ${plural(b.files, "file")}`,
+          plural(b.pages, "page"),
+          `${kb} KB`,
+          `commit ${commit}`,
+          escapeHtml(String(b.built)),
+        ].map((part) => `<span>${part}</span>`).join("");
+        out.hidden = false;
+      })
+      .catch(() => { /* no build.json: keep the plain "built with tessera" line */ });
+  }
+}

@@ -21,9 +21,9 @@ Approved scope, in order:
 | 3 | Token playground | Now |
 | 4 | Kit explorer tree with detail sheets | Now |
 | 7 | Standard Cybercore chrome | Now |
-| 5 | Command cards with detail sheets | Later |
-| 6 | Toolchain matrix | Later |
-| 8 | "Built with Tessera" build footer | Later |
+| 5 | Command cards with detail sheets | Built 2026-11-25 |
+| 6 | Toolchain matrix | Built 2026-11-25 |
+| 8 | "Built with Tessera" build footer | Built 2026-11-25 |
 
 ## Purpose (unchanged)
 
@@ -182,6 +182,7 @@ kit/
 | `website/public/site.js` | New: drawer, active file, typing, playground, sheets |
 | `website/public/backdrop.svg` | New: generated editor backdrop (SVG stays sharp at 2x, so it replaced the planned WebP) |
 | `website/tools/make-backdrop.py` | New: backdrop generator (adapted from dwcode) |
+| `website/tools/stamp-build.py` | New (round two): writes `dist/build.json` for the build footer |
 | `website/fixtures/night-shift/` | New: the real demo project recorded for the live build hero |
 | `website/README.md` | Note the new structure and script |
 
@@ -205,7 +206,7 @@ kit/
 
 No Cloudflare credentials in the repository.
 
-## Deferred (next round)
+## Round two (built 2026-11-25)
 
 - **5. Command cards:** one card per CLI command, opening a sheet with flags,
   example output and status (shipped / opt-in / planned). A `bridge` command
@@ -213,7 +214,9 @@ No Cloudflare credentials in the repository.
 - **6. Toolchain matrix:** CSS · Grass · Dart Sass · Tailwind · UnoCSS ·
   esbuild, showing default vs opt-in and whether Node is needed.
 - **8. Build footer:** `built with tessera vX · dist/ N files · size`, using
-  numbers from the real build.
+  numbers from the real build. `website/tools/stamp-build.py` writes
+  `dist/build.json` after `tessera build`; the footer reads it with JavaScript
+  and falls back to a plain line without it.
 
 ## Risks
 

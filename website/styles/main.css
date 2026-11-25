@@ -359,6 +359,52 @@ ul { list-style: none; padding: 0; margin: 0; }
 .site-sheet .site-pane__code { white-space: pre-wrap; word-break: break-word; font-size: 12px; }
 .site-ex-outline { outline: 1px dashed var(--purple); outline-offset: -1px; }
 
+/* ------------------------------------------------------------ commands */
+.site-ico--bin { color: var(--acid); }
+.site-cmds { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 12px; margin-top: 18px; }
+.site-cmd {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name status" "args args" "desc desc";
+  gap: 4px 10px; height: 100%; padding: 14px 16px; align-content: start;
+  border: 1px solid var(--line-hi); border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 88%, var(--panel));
+  color: var(--fg); text-decoration: none;
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.site-cmd:hover { color: var(--fg); border-color: var(--cyan); transform: translateY(-2px); box-shadow: 0 0 30px -16px var(--cyan); }
+.site-cmd__name { grid-area: name; color: var(--cyan); font-weight: 700; font-size: 15px; }
+.site-cmd__name::before { content: "$ "; color: var(--pink); }
+.site-cmd__args { grid-area: args; color: var(--muted); font-size: 12px; min-height: 1.4em; }
+.site-cmd__desc { grid-area: desc; color: var(--fg); font-size: 13px; margin-top: 4px; }
+.site-cmd__status, .site-pill { align-self: start; padding: 1px 8px; border-radius: 4px; border: 1px solid var(--line-hi); color: var(--muted); font-size: 11px; white-space: nowrap; }
+.site-cmd__status { grid-area: status; }
+.site-cmd__status[data-status="shipped"], .site-pill--on { border-color: color-mix(in srgb, var(--acid) 45%, transparent); color: var(--acid); }
+.site-cmd__status[data-status="early"] { border-color: color-mix(in srgb, var(--orange) 45%, transparent); color: var(--orange); }
+.site-cmd__status[data-status="planned"] { border-style: dashed; color: var(--purple); border-color: color-mix(in srgb, var(--purple) 50%, transparent); }
+.site-cmd--planned { border-style: dashed; background: transparent; }
+.site-cmd--planned .site-cmd__name { color: var(--muted); }
+
+/* ------------------------------------------------------------ toolchain matrix */
+.site-matrix { margin-top: 18px; border: 1px solid var(--line-hi); border-radius: 8px; background: color-mix(in srgb, var(--bg) 88%, var(--panel)); }
+.site-matrix .ts-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.site-matrix caption { padding: 10px 14px; text-align: left; color: var(--dim); font-size: 12px; caption-side: top; }
+.site-matrix th, .site-matrix td { padding: 9px 14px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
+.site-matrix thead th { color: var(--muted); font-weight: 500; font-size: 12px; background: var(--panel); }
+.site-matrix tbody th { color: var(--white); font-weight: 600; white-space: nowrap; }
+.site-matrix td code { white-space: nowrap; }
+.site-matrix tbody tr:hover { background: color-mix(in srgb, var(--cyan) 4%, transparent); }
+.site-no { color: var(--acid); }
+.site-yes { color: var(--orange); }
+.site-matrix__notes { margin-top: 12px; color: var(--muted); font-size: 13px; max-width: 90ch; }
+.site-matrix__notes p { margin: 0 0 6px; }
+.site-matrix__defaults { margin-top: 14px; max-width: 560px; }
+
+/* ------------------------------------------------------------ build line */
+.site-buildline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 0 0 18px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--bg) 75%, var(--panel)); color: var(--muted); font-size: 12px; }
+.site-buildline__stats { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.site-buildline__stats[hidden] { display: none; }
+.site-buildline__stats span::before { content: "·"; margin-right: 14px; color: var(--dim); }
+.site-buildline__stats b { color: var(--acid); font-weight: 600; }
+
 /* ------------------------------------------------------------ start + faq */
 .site-start { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: clamp(18px, 3vw, 36px); align-items: center; }
 .site-start .site-term { margin-top: clamp(20px, 3vw, 30px); }
@@ -423,6 +469,14 @@ ul { list-style: none; padding: 0; margin: 0; }
   .site-editor { padding-left: 8px; padding-right: 8px; }
   .site-term__body, .site-pane__code { font-size: 12px; padding: 12px; }
   .site-play__row { grid-template-columns: minmax(0, 1fr) 30px minmax(0, 104px); }
+  /* Toolchain matrix: each row becomes a labelled card on phones. */
+  .site-matrix .ts-table, .site-matrix caption, .site-matrix tbody, .site-matrix tr, .site-matrix th, .site-matrix td { display: block; }
+  .site-matrix thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .site-matrix tbody tr { padding: 10px 14px; border-top: 1px solid var(--line); }
+  .site-matrix tbody th, .site-matrix td { padding: 3px 0; border: 0; }
+  .site-matrix td { position: relative; padding-left: 102px; }
+  .site-matrix td::before { content: attr(data-label); position: absolute; left: 0; top: 4px; width: 92px; color: var(--dim); font-size: 12px; }
+  .site-matrix td code { white-space: normal; overflow-wrap: anywhere; }
   .site-play__row label, .site-play__row input[type="text"], .site-kit__tree, .site-note, .site-facts, .site-tab, .site-rail__label, .site-rail__status { font-size: max(11px, 12px); }
 }
 
