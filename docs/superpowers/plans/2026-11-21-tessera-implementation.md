@@ -300,18 +300,21 @@ T-02..T-09 + T-11..T-12 ─> T-10 quality/release gates
 
 ### T-13: Build the Tessera project website
 
-**Lifecycle:** in progress; the design plan and locally built one-page site draft are in place. Cloudflare Pages setup and deployment remain future release tasks.
+**Lifecycle:** in progress; the first (editorial) site is live at `tessera-8gd.pages.dev`. On 2026-11-25 the owner approved a redesign in the Cybercore editor style; see the [site plan](2026-11-23-tessera-pages-site-plan.md).
 **Dependencies:** T-02, T-04, T-08, T-10.
-**Target:** `https://tessera.pages.dev` on Cloudflare Pages, after the site content and build output are ready.
+**Target:** `https://tessera-8gd.pages.dev` on Cloudflare Pages (Cloudflare assigned the `-8gd` suffix).
 
-**Acceptance:** The project website is built with Tessera and demonstrates the real Kit. It explains the CLI, Kit, tokens, optional style adapters, and opt-in scripts without overstating unfinished features. It keeps Tessera's warm editorial identity while borrowing useful information patterns from Cybercore's existing project sites. It is responsive, keyboard-accessible, dark-mode aware, and usable without JavaScript. Cloudflare deployment remains an explicit manual release action.
+**Acceptance:** The project website is built with Tessera and demonstrates the real Kit. It explains the CLI, Kit, tokens, optional style adapters, and opt-in scripts without overstating unfinished features. It follows the Cybercore family site style (editor shell, mono type, shared theme chooser and contact block). It is responsive, keyboard-accessible, dark-mode aware, and usable without JavaScript. Cloudflare deployment remains an explicit manual release action.
 
 - [x] Approve the information architecture and visual direction in the site plan.
 - [x] Build the site in a dedicated self-hosted project directory using Tessera and its Kit.
 - [x] Add accessible navigation, documentation pathways, real feature examples, and install instructions.
 - [ ] Verify responsive, keyboard, light/dark, and no-JavaScript behavior.
-- [ ] Configure Cloudflare Pages for `tessera.pages.dev` and deploy only after explicit release approval.
-- [ ] Commit `feat: build the Tessera project website` with body `Project contributor`.
+- [x] Configure Cloudflare Pages and deploy the first site by hand.
+- [x] Commit `feat: add the Tessera project website` with body `Project contributor`.
+- [ ] Rebuild in the Cybercore editor style: editor shell, live build hero, token playground, Kit explorer, Cybercore chrome.
+- [ ] Later: command cards, toolchain matrix, build footer.
+- [ ] Deploy the redesign only after explicit release approval.
 
 ## Verification, risks, and handoff
 
