@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{description}}">
+  <meta name="theme-color" content="#05070b">
+  <title>{{title}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cybercoretech.github.io/kit/chooser.css">
+  <script>
+    window.SITE = { defaultTheme: "cybercore-tech" };
+    // Motion hooks: site.js sets window.siteReady. If it never loads, drop the
+    // hook so typed lines and reveals are never left hidden.
+    document.documentElement.classList.add("js");
+    setTimeout(() => { if (!window.siteReady) document.documentElement.classList.remove("js"); }, 2500);
+  </script>
+  <script type="module" src="https://cybercoretech.github.io/kit/chooser.js"></script>
+  <script type="module" src="https://cybercoretech.github.io/kit/contact.js"></script>
+  <script type="module" src="/site.js"></script>
+</head>
+<body>
+  <a class="site-skip" href="#main">Skip to content</a>
+  <header class="site-bar">
+    <a class="site-brand" href="#top" aria-label="Tessera home">
+      <span class="site-brand__mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="site-brand__name">tessera</span>
+    </a>
+    <span class="site-bar__path" aria-hidden="true">~/cybercore/tessera <b>▸ main</b></span>
+    <a class="site-bar__link" href="https://github.com/cybercoretech/tessera" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span><span class="site-sr"> (opens in a new tab)</span></a>
+    <cybercore-theme-chooser shuffle compact default="cybercore-tech" match=".site-bar__link"></cybercore-theme-chooser>
+    <a class="site-burger" href="#files" role="button" aria-controls="files" aria-expanded="false" aria-label="Open file explorer"><span></span><span></span><span></span></a>
+  </header>
+  <div class="site-shell">
+    <nav class="site-rail" id="files" aria-label="Page sections">
+      <div class="site-rail__head">
+        <span class="site-comment">// explorer</span>
+        <a class="site-rail__close" href="#main" role="button" aria-label="Close file explorer">✕</a>
+      </div>
+      <ul class="site-tree">
+        <li class="site-tree__folder"><span aria-hidden="true">▾</span> tessera/</li>
+        <li><a href="#top" data-file><span class="site-ico site-ico--md" aria-hidden="true">M↓</span>README.md</a></li>
+        <li><a href="#build" data-file><span class="site-ico site-ico--md" aria-hidden="true">M↓</span>content/index.md</a></li>
+        <li><a href="#tokens" data-file><span class="site-ico site-ico--toml" aria-hidden="true">≡</span>tessera.toml</a></li>
+        <li><a href="#kit" data-file><span class="site-ico site-ico--dir" aria-hidden="true">▸</span>kit/</a></li>
+        <li><a href="#start" data-file><span class="site-ico site-ico--dir" aria-hidden="true">▸</span>dist/</a></li>
+        <li><a href="#faq" data-file><span class="site-ico site-ico--md" aria-hidden="true">M↓</span>FAQ.md</a></li>
+      </ul>
+      <p class="site-rail__label">// links</p>
+      <ul class="site-tree site-tree--links">
+        <li><a href="https://github.com/cybercoretech/tessera" target="_blank" rel="noopener"><span class="site-ico" aria-hidden="true">⌥</span>source<span class="site-sr"> (opens in a new tab)</span></a></li>
+        <li><a href="https://github.com/cybercoretech/tessera/tree/main/docs/kit" target="_blank" rel="noopener"><span class="site-ico" aria-hidden="true">§</span>kit guides<span class="site-sr"> (opens in a new tab)</span></a></li>
+        <li><a href="https://github.com/cybercoretech/tessera/issues" target="_blank" rel="noopener"><span class="site-ico" aria-hidden="true">!</span>issues<span class="site-sr"> (opens in a new tab)</span></a></li>
+        <li><a href="#contact"><span class="site-ico" aria-hidden="true">@</span>contact</a></li>
+      </ul>
+      <p class="site-rail__status"><span class="site-dot" aria-hidden="true"></span> tessera 0.1.0 · main</p>
+    </nav>
+    <div class="site-scrim" hidden></div>
+    <div class="site-editor">
+      <main id="main">
+        {{content}}
+      </main>
+      <footer class="site-footer" id="contact">
+        <cybercore-contact repo="tessera">
+          <a href="mailto:dev@cybercoretech.net">dev@cybercoretech.net</a>
+        </cybercore-contact>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>
