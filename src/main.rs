@@ -10,6 +10,8 @@ mod scaffolding;
 
 mod kit;
 mod site;
+#[cfg(all(test, unix))]
+mod test_support;
 mod token;
 
 /// Top‑level CLI definition.

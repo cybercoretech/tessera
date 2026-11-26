@@ -704,6 +704,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn dart_sass_cli_output_is_used_for_scss() {
+        let _exec = crate::test_support::exec_lock();
         let root = tempdir().unwrap();
         let style_path = root.path().join("main.scss");
         fs::write(&style_path, "$color: red;").unwrap();

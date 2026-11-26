@@ -371,17 +371,11 @@ fn ensure_success(
 #[cfg(all(test, unix))]
 mod tests {
     use super::{bundle_scripts_with_tools, compile_utility_css_with_tools, ToolPaths};
+    use crate::test_support::{exec_lock, fake_program};
     use crate::token::TokenSet;
-    use std::{fs, os::unix::fs::PermissionsExt, path::Path};
+    use std::{fs, path::Path};
     use tempfile::tempdir;
     use tessera_config::ProjectConfig;
-
-    fn fake_program(path: &Path, body: &str) {
-        fs::write(path, format!("#!/bin/sh\n{body}\n")).unwrap();
-        let mut permissions = fs::metadata(path).unwrap().permissions();
-        permissions.set_mode(0o755);
-        fs::set_permissions(path, permissions).unwrap();
-    }
 
     fn tool_paths(root: &Path) -> ToolPaths {
         ToolPaths {
@@ -394,6 +388,7 @@ mod tests {
 
     #[test]
     fn tailwind_uses_token_theme_and_emits_cli_output() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scratch = root.path().join("scratch");
         fs::create_dir(&scratch).unwrap();
@@ -420,6 +415,7 @@ mod tests {
 
     #[test]
     fn reports_missing_tailwind_cli_without_installing_it() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scratch = root.path().join("scratch");
         fs::create_dir(&scratch).unwrap();
@@ -442,6 +438,7 @@ mod tests {
 
     #[test]
     fn reports_tailwind_cli_failure_output() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scratch = root.path().join("scratch");
         fs::create_dir(&scratch).unwrap();
@@ -466,13 +463,14 @@ mod tests {
 
     #[test]
     fn check_tool_rejects_unsupported_tailwind_major_version() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let executable = root.path().join("tailwindcss");
         fake_program(&executable, "echo 'tailwindcss v3.4.0'");
 
         let error = super::check_tool(executable.to_str().unwrap(), Some(4)).unwrap_err();
 
-        assert!(error.contains("expected major version 4"));
+        assert!(error.contains("expected major version 4"), "{error}");
     }
 
     #[test]
@@ -498,6 +496,7 @@ mod tests {
 
     #[test]
     fn unocss_uses_selected_preset_and_emits_cli_output() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scratch = root.path().join("scratch");
         fs::create_dir(&scratch).unwrap();
@@ -526,6 +525,7 @@ mod tests {
 
     #[test]
     fn reports_missing_unocss_cli_without_installing_it() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scratch = root.path().join("scratch");
         fs::create_dir(&scratch).unwrap();
@@ -550,6 +550,7 @@ mod tests {
 
     #[test]
     fn reports_unocss_cli_failure_output() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scratch = root.path().join("scratch");
         fs::create_dir(&scratch).unwrap();
@@ -576,6 +577,7 @@ mod tests {
 
     #[test]
     fn esbuild_and_tsc_are_separately_invoked_for_typescript() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scripts_dir = root.path().join("scripts");
         fs::create_dir(&scripts_dir).unwrap();
@@ -600,6 +602,7 @@ mod tests {
 
     #[test]
     fn reports_missing_esbuild_and_typescript_tools() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scripts_dir = root.path().join("scripts");
         fs::create_dir(&scripts_dir).unwrap();
@@ -620,6 +623,7 @@ mod tests {
 
     #[test]
     fn reports_typecheck_failure_after_bundling() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scripts_dir = root.path().join("scripts");
         fs::create_dir(&scripts_dir).unwrap();
@@ -648,6 +652,7 @@ mod tests {
 
     #[test]
     fn reports_missing_typescript_compiler_after_bundling() {
+        let _exec = exec_lock();
         let root = tempdir().unwrap();
         let scripts_dir = root.path().join("scripts");
         fs::create_dir(&scripts_dir).unwrap();
